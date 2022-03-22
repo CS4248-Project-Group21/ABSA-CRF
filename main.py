@@ -92,5 +92,3 @@ for i, doc in enumerate(docs):
 
     # Take the word, POS tag, and its label
     data.append([(w, pos, label) for (w, label), (word, pos) in zip(doc, tagged)])
-
-print(data[0])
