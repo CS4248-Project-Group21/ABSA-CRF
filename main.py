@@ -5,6 +5,9 @@ from bs4.element import Tag
 import codecs
 import re
 import nltk
+
+from contractions import CONTRACTION_MAP
+
 nltk.download('punkt')
 
 # Read data file and parse the XML
@@ -22,6 +25,23 @@ def findall_occurences(aspectTerms, text):
     return [item[1:][0] for item in lst], text
 
 
+def expand_contractions(text, contraction_mapping=CONTRACTION_MAP):
+    contractions_pattern = re.compile('({})'.format('|'.join(contraction_mapping.keys())),
+                                      flags=re.IGNORECASE | re.DOTALL)
+
+    def expand_match(contraction):
+        match = contraction.group(0)
+        first_char = match[0]
+        expanded_contraction = contraction_mapping.get(match) \
+            if contraction_mapping.get(match) \
+            else contraction_mapping.get(match.lower())
+        expanded_contraction = first_char + expanded_contraction[1:]
+        return expanded_contraction
+
+    expanded_text = contractions_pattern.sub(expand_match, text)
+    expanded_text = re.sub("'", "", expanded_text)
+    return expanded_text
+
 docs = []
 for elem in soup.find_all("sentence"):
     texts = []
@@ -35,12 +55,13 @@ for elem in soup.find_all("sentence"):
 
     for text in elem.find("text"):
         aspectTermsLst, modified_text = findall_occurences(aspectTerms, text)
-        tokens = nltk.word_tokenize(modified_text)
+
+        tokens = nltk.word_tokenize(expand_contractions(modified_text))
+
         for token in tokens:
-            updated_tokens.append(token.strip(string.punctuation))
-
-        # remove empty strings
-
+            word = token.strip(string.punctuation)
+            if len(word) != 0:
+                updated_tokens.append(word)
 
         for i in range(len(updated_tokens)):
             if updated_tokens[i] == "ASPECT":
