@@ -187,7 +187,7 @@ def train_and_validate_model():
 
     y_pred = [tagger.tag(xseq) for xseq in X_test]
 
-    labels = {"B": 0, 'I': 1, 'O': 2}
+    labels = {"B": 0, 'I': 1, 'O': 2} # row indexes for position of labels in the classification matrix
 
     predictions = np.array([labels[tag] for row in y_pred for tag in row])
     truths = np.array([labels[tag] for row in y_test for tag in row])
