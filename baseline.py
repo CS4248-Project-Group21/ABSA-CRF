@@ -4,7 +4,6 @@ import pycrfsuite
 import nltk
 import numpy as np
 
-from nltk.stem import WordNetLemmatizer
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 
@@ -23,10 +22,6 @@ class CNFModel:
     def word2features(self, sentence, i):
         current_word = sentence[i][0]
         current_pos = sentence[i][1]
-
-        lemmatizer = WordNetLemmatizer()
-        superlatives = ['JJS', 'RBS']
-        comparatives = ['JJR', 'RBR']
 
         # Features relevant to the CURRENT token in sentence
         features = [
@@ -116,41 +111,6 @@ class CNFModel:
         predictions = np.array([labels[tag] for row in y_pred for tag in row])
         truths = np.array([labels[tag] for row in y_test for tag in row])
         print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
-
-
-    ## Uncomment to see results on predicting validation data
-    # def build_model_and_test_validation(self):
-    #
-    #     X = [self.extract_features(sentence) for sentence in self.train_data]
-    #     y = [self.get_label(sentence) for sentence in self.train_data]
-    #
-    #     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    #
-    #
-    #     trainer = pycrfsuite.Trainer(verbose=False)
-    #     for xseq, yseq in zip(X_train, y_train):
-    #         trainer.append(xseq, yseq)
-    #
-    #     trainer.set_params({
-    #         'c1': 0.1,
-    #         'c2': 0.01,
-    #         'max_iterations': 200,
-    #         'feature.possible_transitions': True
-    #     })
-    #
-    #     trainer.train('crf.model')
-    #
-    #     tagger = pycrfsuite.Tagger()
-    #     tagger.open('crf.model')
-    #
-    #     y_pred = [tagger.tag(xseq) for xseq in X_test]
-    #
-    #     labels = {"B": 0, 'I': 1, 'O': 2}
-    #
-    #     predictions = np.array([labels[tag] for row in y_pred for tag in row])
-    #     truths = np.array([labels[tag] for row in y_test for tag in row])
-    #
-    #     print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
 
 
 if __name__ == "__main__":
