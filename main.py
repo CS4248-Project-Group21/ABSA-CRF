@@ -75,10 +75,17 @@ for elem in soup.find_all("sentence"):
             # else label = N
 
             if token in aspectTerms:
-                label = "A"
+                token_list = token.split()
+                label = "B"
+                texts.append((token_list[0], label))
+                if len(token_list) > 1:
+                    label = "I"
+                    token_list.pop(0)
+                    for t in token_list:
+                        texts.append((t, label))
             else:
-                label = "N"
-            texts.append((token, label))
+                label = "O"
+                texts.append((token, label))
     docs.append(texts)
 
 data = []
@@ -92,3 +99,5 @@ for i, doc in enumerate(docs):
 
     # Take the word, POS tag, and its label
     data.append([(w, pos, label) for (w, label), (word, pos) in zip(doc, tagged)])
+
+print(data[0])
