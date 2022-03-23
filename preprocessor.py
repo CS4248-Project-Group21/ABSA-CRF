@@ -20,10 +20,10 @@ class Preprocessor:
 
 
         # contains data of all training sentences, each sentence broken down into individual (word, pos, bio_tag)
-        self.train_data = self.build_train_corpus(self.train_soup)
+        self.train_data = self.build_corpus(self.train_soup)
 
         # contains data of all test sentences
-        self.test_data = self.build_train_corpus(self.test_soup)
+        self.test_data = self.build_corpus(self.test_soup)
 
     def find_all_occurrences(self, aspectTerms, text):
         lst = []
@@ -51,7 +51,7 @@ class Preprocessor:
         expanded_text = re.sub("'", "", expanded_text)
         return expanded_text
 
-    def build_train_corpus(self, soup_used):
+    def build_corpus(self, soup_used):
         docs = []
 
         for elem in soup_used.find_all("sentence"):

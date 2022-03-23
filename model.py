@@ -107,7 +107,7 @@ class CNFModel:
 
 
     ## Uncomment to see results on predicting validation data
-    # def build_model_validation(self):
+    # def build_model_and_test_validation(self):
     #
     #     X = [self.extract_features(sentence) for sentence in self.train_data]
     #     y = [self.get_label(sentence) for sentence in self.train_data]
