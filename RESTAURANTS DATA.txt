@@ -1,0 +1,126 @@
+                    RESTAURANTS DATA
+----------------------------------------------------------
+BASELINE (without future/previous context)
+
+              precision    recall  f1-score   support
+
+           B       0.84      0.73      0.78      1126
+           I       0.70      0.53      0.60       478
+           O       0.96      0.99      0.97      9478
+
+    accuracy                           0.94     11082
+   macro avg       0.83      0.75      0.78     11082
+weighted avg       0.94      0.94      0.94     11082
+
+----------------------------------------------------------
+BASELINE MODEL
+
+              precision    recall  f1-score   support
+
+           B       0.85      0.76      0.80      1126
+           I       0.75      0.57      0.65       478
+           O       0.96      0.99      0.97      9478
+
+    accuracy                           0.95     11082
+   macro avg       0.86      0.77      0.81     11082
+weighted avg       0.94      0.95      0.94     11082
+
+----------------------------------------------------------
+BASELINE + LEM 
+
+              precision    recall  f1-score   support
+
+           B       0.85      0.75      0.80      1126
+           I       0.76      0.55      0.64       478
+           O       0.96      0.99      0.97      9478
+
+    accuracy                           0.94     11082
+   macro avg       0.86      0.76      0.80     11082
+weighted avg       0.94      0.94      0.94     11082
+
+----------------------------------------------------------
+BASELINE + LEM + STEM (same if remove LEM)
+
+              precision    recall  f1-score   support
+
+           B       0.86      0.75      0.80      1126
+           I       0.75      0.57      0.65       478
+           O       0.96      0.99      0.97      9478
+
+    accuracy                           0.95     11082
+   macro avg       0.86      0.77      0.81     11082
+weighted avg       0.94      0.95      0.94     11082
+
+----------------------------------------------------------
+BASELINE + LEM + STEM + SUPER
+
+              precision    recall  f1-score   support
+
+           B       0.85      0.75      0.80      1126
+           I       0.75      0.56      0.64       478
+           O       0.96      0.99      0.97      9478
+
+    accuracy                           0.95     11082
+   macro avg       0.85      0.77      0.80     11082
+weighted avg       0.94      0.95      0.94     11082
+
+----------------------------------------------------------
+BASELINE + LEM + STEM + SUPER + COMPAR
+
+              precision    recall  f1-score   support
+
+           B       0.85      0.75      0.80      1126
+           I       0.75      0.55      0.64       478
+           O       0.96      0.99      0.97      9478
+
+    accuracy                           0.94     11082
+   macro avg       0.85      0.76      0.80     11082
+weighted avg       0.94      0.94      0.94     11082
+
+----------------------------------------------------------
+BASELINE + LEM + STEM + SUPER + COMPAR + STOP
+
+              precision    recall  f1-score   support
+
+           B       0.86      0.75      0.80      1126
+           I       0.76      0.56      0.64       478
+           O       0.96      0.99      0.97      9478
+
+    accuracy                           0.95     11082
+   macro avg       0.86      0.77      0.81     11082
+weighted avg       0.94      0.95      0.94     11082
+
+----------------------------------------------------------
+BASELINE + LEM + STEM + SUPER + COMPAR + STOP + SENTIMENT
+
+              precision    recall  f1-score   support
+
+           B       0.85      0.75      0.80      1126
+           I       0.75      0.56      0.64       478
+           O       0.96      0.99      0.97      9478
+
+    accuracy                           0.95     11082
+   macro avg       0.85      0.77      0.81     11082
+weighted avg       0.94      0.95      0.94     11082
+
+
+----------------------------------------------------------
+BASELINE + LEM + STEM + SUPER + COMPAR + STOP + NER (super long)
+
+              precision    recall  f1-score   support
+
+           B       0.86      0.75      0.80      1126
+           I       0.75      0.57      0.65       478
+           O       0.96      0.99      0.97      9478
+
+    accuracy                           0.95     11082
+   macro avg       0.86      0.77      0.81     11082
+weighted avg       0.94      0.95      0.94     11082
+
+----------------------------------------------------------
+
+----------------------------------------------------------
+
+----------------------------------------------------------
+
+----------------------------------------------------------

@@ -8,13 +8,15 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 
 
-TRAIN_DIRECTORY = "data/train_data/Restaurants_Train_v2.xml"
-TEST_DIRECTORY = "data/test_data/Restaurants_Test_Truth.xml"
+RESTAURANT_TRAIN_DIRECTORY = "data/train_data/Restaurants_Train_v2.xml"
+RESTAURANT_TEST_DIRECTORY = "data/test_data/Restaurants_Test_Truth.xml"
 
+LAPTOP_TRAIN_DIRECTORY = "data/train_data/Laptop_Train_v2.xml"
+LAPTOP_TEST_DIRECTORY = "data/test_data/Laptops_Test_Truth.xml"
 
-class CNFModel:
+class CNFBaselineModel:
 
-    def __init__(self, train_directory=TRAIN_DIRECTORY, test_directory=TEST_DIRECTORY):
+    def __init__(self, train_directory=LAPTOP_TRAIN_DIRECTORY, test_directory=LAPTOP_TEST_DIRECTORY):
         self.preprocessed = Preprocessor(train_directory, test_directory)
         self.train_data = self.preprocessed.train_data
         self.test_data =  self.preprocessed.test_data
@@ -97,6 +99,7 @@ class CNFModel:
             'feature.possible_transitions': True
         })
         trainer.train('crf.model')
+        print("Finished training model")
 
     def predict(self):
         X_test = [self.extract_features(sentence) for sentence in self.test_data]
@@ -114,6 +117,6 @@ class CNFModel:
 
 
 if __name__ == "__main__":
-    model = CNFModel()
+    model = CNFBaselineModel()
     model.train_model()
     model.predict()
