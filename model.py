@@ -28,6 +28,7 @@ class CNFModel:
         self.preprocessed = Preprocessor(train_directory, test_directory)
         self.train_data = self.preprocessed.train_data
         self.test_data =  self.preprocessed.test_data
+        self.corpus_freq = self.build_corpus_freq()
 
 
     # sentence = [(w1, pos, bio_label),(w2, pos, bio_label),...,(wn, pos, bio_label)]
@@ -64,6 +65,7 @@ class CNFModel:
                 'word.isStopword=%s' % self.isStopword(current_word),
                 'word.positivityscore=%s' % polarity_score['pos'],
                 'word.negativityscore=%s' % polarity_score['neg'],
+                'word.isFrequent=%s' % (1 if self.corpus_freq[current_word] > 3 else 0),
                 #'word.nerlabel=' + current_word_ner,
                 'pos.isSuperlative=%s' % self.isSuperlative(current_pos),
                 'pos.isComparative=%s' % self.isComparative(current_pos),
@@ -128,7 +130,21 @@ class CNFModel:
             lst.append(token_ner_info)
         return lst
 
+    def build_corpus_freq(self):
+        freq_lst = {}
+        for sentence in self.train_data:
+            for word, pos, label in sentence:
+                if word not in freq_lst:
+                    freq_lst[word] = 0
+                freq_lst[word] += 1
 
+        for sentence2 in self.test_data:
+            for word2, pos2, label2 in sentence2:
+                if word2 not in freq_lst:
+                    freq_lst[word2] = 0
+                freq_lst[word2] += 1
+
+        return freq_lst
 
     def get_label(self, sentence):
         return [label for (token, pos, label) in sentence]
