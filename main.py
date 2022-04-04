@@ -26,7 +26,7 @@ def findall_occurences(aspectTerms, text):
     for term in aspectTerms:
         currLst = [(m.start(), term) for m in re.finditer(term, text)]
         lst = currLst + lst
-        text = re.sub(term, "ASPECT", text)
+        text = re.sub("\b" + term + "\b", "ASPECT", text)
     lst.sort(key=lambda a: a[0])
     return [item[1:][0] for item in lst], text
 
@@ -105,7 +105,6 @@ for i, doc in enumerate(docs):
 
     # Take the word, POS tag, and its label
     data.append([(w, pos, label) for (w, label), (word, pos) in zip(doc, tagged)])
-
 
 def word2features(sentence, i):
     current_word = sentence[i][0]
