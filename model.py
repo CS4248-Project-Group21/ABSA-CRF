@@ -1,9 +1,12 @@
 from preprocessor import Preprocessor
+from preprocessor2 import Preprocessor2
 
 import pycrfsuite
 import nltk
 import numpy as np
 import spacy
+import string
+import copy
 
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
@@ -28,17 +31,14 @@ class CNFModel:
         Change desired directory here to test on restaurant/laptop
     '''
     def __init__(self, train_directory=RESTAURANT_TRAIN_DIRECTORY, test_directory=RESTAURANT_TEST_DIRECTORY):
-        self.preprocessed = Preprocessor(train_directory, test_directory)
+        self.preprocessed = Preprocessor2(train_directory, test_directory)
         self.train_data = self.preprocessed.train_data
-        self.test_data =  self.preprocessed.test_data
+        self.test_data = self.preprocessed.test_data
         self.corpus_freq = self.build_corpus_freq()
 
 
     # sentence = [(w1, pos, bio_label),(w2, pos, bio_label),...,(wn, pos, bio_label)]
     def extract_features(self, sentence):
-
-        #nlp = spacy.load("en_core_web_sm")
-        #list_tokens_NER = self.get_tokens_NER(sentence, parser=nlp)
 
         sentiment_analyzer = SentimentIntensityAnalyzer()
 
@@ -47,7 +47,6 @@ class CNFModel:
         for i in range(len(sentence)):
             current_word = sentence[i][0]
             current_pos = sentence[i][1]
-            #current_word_ner = list_tokens_NER[i]
             polarity_score = sentiment_analyzer.polarity_scores(current_word)
             lemmatizer = WordNetLemmatizer()
             stemmer = PorterStemmer()
@@ -63,7 +62,7 @@ class CNFModel:
                 'word.lemmatized': lemmatizer.lemmatize(current_word),
                 'word.stemmed': stemmer.stem(current_word),
                 'word.isStopWord': self.isStopword(current_word),
-                #'word.isFrequent': self.corpus_freq[current_word] > 3,
+                'word.isFrequent': self.corpus_freq[current_word] > 4,
                 'word.positivityscore': polarity_score['pos'],
                 'word.negativityscore': polarity_score['neg'],
                 'postag': current_pos,

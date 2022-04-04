@@ -88,15 +88,25 @@ class Preprocessor:
 
                 tokens = nltk.word_tokenize(self.expand_contractions(modified_text))
 
+                print("Aspect List = %s" % aspectTermsLst)
+
                 for token in tokens:
                     word = token.strip(string.punctuation)
                     if len(word) != 0:
                         updated_tokens.append(word)
 
+
+
                 for i in range(len(updated_tokens)):
                     if updated_tokens[i] == "ASPECT":
                         updated_tokens[i] = aspectTermsLst[0]
                         aspectTermsLst.pop(0)
+
+
+                print("Mod = ", modified_text)
+                print("Original = ", text)
+                print(updated_tokens)
+                print("---------------------------------------------")
 
                 for token in updated_tokens:
                     # Remove punctuations except for special cases such as 17-inch, "sales" team

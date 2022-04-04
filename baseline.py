@@ -1,4 +1,5 @@
 from preprocessor import Preprocessor
+from preprocessor2 import Preprocessor2
 
 import pycrfsuite
 import nltk
@@ -19,8 +20,8 @@ class CNFBaselineModel:
     '''
         Change desired directory here to test on restaurant/laptop
     '''
-    def __init__(self, train_directory=LAPTOP_TRAIN_DIRECTORY, test_directory=LAPTOP_TEST_DIRECTORY):
-        self.preprocessed = Preprocessor(train_directory, test_directory)
+    def __init__(self, train_directory=RESTAURANT_TRAIN_DIRECTORY, test_directory=RESTAURANT_TEST_DIRECTORY):
+        self.preprocessed = Preprocessor2(train_directory, test_directory)
         self.train_data = self.preprocessed.train_data
         self.test_data =  self.preprocessed.test_data
 
@@ -37,6 +38,8 @@ class CNFBaselineModel:
             'word.istitle': current_word.istitle(),
             'word.isdigit': current_word.isdigit(),
             'word.isupper': current_word.isupper(),
+            #'postag': current_pos,
+            #'postag[:2]': current_pos[:2]
         }
 
         return features
