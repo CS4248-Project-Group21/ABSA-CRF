@@ -19,24 +19,25 @@ class CNFBaselineModel:
     '''
         Change desired directory here to test on restaurant/laptop
     '''
-    def __init__(self, train_directory=RESTAURANT_TRAIN_DIRECTORY, test_directory=RESTAURANT_TEST_DIRECTORY):
+    def __init__(self, train_directory=LAPTOP_TRAIN_DIRECTORY, test_directory=LAPTOP_TEST_DIRECTORY):
         self.preprocessed = Preprocessor(train_directory, test_directory)
         self.train_data = self.preprocessed.train_data
         self.test_data =  self.preprocessed.test_data
 
     def word2features(self, sentence, i):
         current_word = sentence[i][0]
+        current_pos = sentence[i][1]
 
         # Features relevant to the CURRENT token in sentence
-        features = [
-            'bias',
-            'word.lower=' + current_word.lower(),
-            'word[-3:]=' + current_word[-3:],
-            'word[-2:]=' + current_word[-2:],
-            'word.istitle=%s' % current_word.istitle(),
-            'word.isdigit=%s' % current_word.isdigit(),
-            'word.isupper=%s' % current_word.isupper(),
-        ]
+        features = {
+            'bias': 1.0,
+            'word.lower()': current_word.lower(),
+            'word[-3:]': current_word[-3:],
+            'word[-2:]': current_word[-2:],
+            'word.istitle': current_word.istitle(),
+            'word.isdigit': current_word.isdigit(),
+            'word.isupper': current_word.isupper(),
+        }
 
         return features
 

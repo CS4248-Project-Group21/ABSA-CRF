@@ -1,126 +1,26 @@
                     RESTAURANTS DATA
 ----------------------------------------------------------
-BASELINE (without future/previous context)
+BASELINE
 
-              precision    recall  f1-score   support
-
-           B       0.84      0.73      0.78      1126
-           I       0.70      0.53      0.60       478
-           O       0.96      0.99      0.97      9478
-
-    accuracy                           0.94     11082
-   macro avg       0.83      0.75      0.78     11082
-weighted avg       0.94      0.94      0.94     11082
-
+Precision = 0.765253360910031, Recall = 0.6571936056838366, F1 = 0.7071189679885332, Common = 740.0, Retrieved = 967.0, Relevant = 1126.0
 ----------------------------------------------------------
-BASELINE MODEL
+BASELINE + POS
 
-              precision    recall  f1-score   support
-
-           B       0.85      0.76      0.80      1126
-           I       0.75      0.57      0.65       478
-           O       0.96      0.99      0.97      9478
-
-    accuracy                           0.95     11082
-   macro avg       0.86      0.77      0.81     11082
-weighted avg       0.94      0.95      0.94     11082
-
+Precision = 0.7815384615384615, Recall = 0.6767317939609236, F1 = 0.7253688719657306, Common = 762.0, Retrieved = 975.0, Relevant = 1126.0
 ----------------------------------------------------------
-BASELINE + LEM 
+BASELINE + POS + BIGRAM
 
-              precision    recall  f1-score   support
-
-           B       0.85      0.75      0.80      1126
-           I       0.76      0.55      0.64       478
-           O       0.96      0.99      0.97      9478
-
-    accuracy                           0.94     11082
-   macro avg       0.86      0.76      0.80     11082
-weighted avg       0.94      0.94      0.94     11082
-
+Precision = 0.8086172344689379, Recall = 0.716696269982238, F1 = 0.7598870056497175, Common = 807.0, Retrieved = 998.0, Relevant = 1126.0
 ----------------------------------------------------------
-BASELINE + LEM + STEM (same if remove LEM)
+BASELINE + POS + BIGRAM + (LEM/STEM)
 
-              precision    recall  f1-score   support
-
-           B       0.86      0.75      0.80      1126
-           I       0.75      0.57      0.65       478
-           O       0.96      0.99      0.97      9478
-
-    accuracy                           0.95     11082
-   macro avg       0.86      0.77      0.81     11082
-weighted avg       0.94      0.95      0.94     11082
-
+Precision = 0.8140703517587939, Recall = 0.7193605683836589, F1 = 0.7637906647807637, Common = 810.0, Retrieved = 995.0, Relevant = 1126.0
 ----------------------------------------------------------
-BASELINE + LEM + STEM + SUPER
+BASELINE + POS + BIGRAM + (LEM/STEM) + Stopword Check (Stopword Check Decreases F1 on Laptop)
 
-              precision    recall  f1-score   support
-
-           B       0.85      0.75      0.80      1126
-           I       0.75      0.56      0.64       478
-           O       0.96      0.99      0.97      9478
-
-    accuracy                           0.95     11082
-   macro avg       0.85      0.77      0.80     11082
-weighted avg       0.94      0.95      0.94     11082
-
+Precision = 0.8125, Recall = 0.7158081705150977, F1 = 0.7610953729933901, Common = 806.0, Retrieved = 992.0, Relevant = 1126.0
 ----------------------------------------------------------
-BASELINE + LEM + STEM + SUPER + COMPAR
+BASELINE + POS + BIGRAM + (LEM/STEM) + Polarity ((Polarity decreases F1 on Restaurant)
 
-              precision    recall  f1-score   support
-
-           B       0.85      0.75      0.80      1126
-           I       0.75      0.55      0.64       478
-           O       0.96      0.99      0.97      9478
-
-    accuracy                           0.94     11082
-   macro avg       0.85      0.76      0.80     11082
-weighted avg       0.94      0.94      0.94     11082
-
-----------------------------------------------------------
-BASELINE + LEM + STEM + SUPER + COMPAR + STOP
-
-              precision    recall  f1-score   support
-
-           B       0.86      0.75      0.80      1126
-           I       0.76      0.56      0.64       478
-           O       0.96      0.99      0.97      9478
-
-    accuracy                           0.95     11082
-   macro avg       0.86      0.77      0.81     11082
-weighted avg       0.94      0.95      0.94     11082
-
-----------------------------------------------------------
-BASELINE + LEM + STEM + SUPER + COMPAR + STOP + SENTIMENT
-
-              precision    recall  f1-score   support
-
-           B       0.85      0.75      0.80      1126
-           I       0.75      0.56      0.64       478
-           O       0.96      0.99      0.97      9478
-
-    accuracy                           0.95     11082
-   macro avg       0.85      0.77      0.81     11082
-weighted avg       0.94      0.95      0.94     11082
-
-
-----------------------------------------------------------
-BASELINE + LEM + STEM + SUPER + COMPAR + STOP + NER (super long)
-
-              precision    recall  f1-score   support
-
-           B       0.86      0.75      0.80      1126
-           I       0.75      0.57      0.65       478
-           O       0.96      0.99      0.97      9478
-
-    accuracy                           0.95     11082
-   macro avg       0.86      0.77      0.81     11082
-weighted avg       0.94      0.95      0.94     11082
-
-----------------------------------------------------------
-
-----------------------------------------------------------
-
-----------------------------------------------------------
-
+Precision = 0.8108108108108109, Recall = 0.7193605683836589, F1 = 0.7623529411764706, Common = 810.0, Retrieved = 999.0, Relevant = 1126.0
 ----------------------------------------------------------

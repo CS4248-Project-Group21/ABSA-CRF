@@ -1,109 +1,26 @@
                         LAPTOP DATA
 ----------------------------------------------------------
-BASELINE (without future/previous context)
-
-              precision    recall  f1-score   support
-
-           B       0.80      0.61      0.69       646
-           I       0.77      0.47      0.58       403
-           O       0.96      0.99      0.98      9438
-
-    accuracy                           0.95     10487
-   macro avg       0.84      0.69      0.75     10487
-weighted avg       0.94      0.95      0.94     10487
-
-----------------------------------------------------------
 BASELINE
 
-              precision    recall  f1-score   support
-
-           B       0.84      0.63      0.72       646
-           I       0.80      0.52      0.63       403
-           O       0.96      0.99      0.98      9438
-
-    accuracy                           0.95     10487
-   macro avg       0.87      0.72      0.78     10487
-weighted avg       0.95      0.95      0.95     10487
-
+Precision = 0.6953781512605042, Recall = 0.5123839009287926, F1 = 0.590017825311943, Common = 331.0, Retrieved = 476.0, Relevant = 646.0
 ----------------------------------------------------------
-BASELINE + LEM 
+BASELINE + POS
 
-              precision    recall  f1-score   support
-
-           B       0.84      0.64      0.72       646
-           I       0.79      0.51      0.62       403
-           O       0.96      0.99      0.98      9438
-
-    accuracy                           0.95     10487
-   macro avg       0.87      0.71      0.77     10487
-weighted avg       0.95      0.95      0.95     10487
-
+Precision = 0.6937119675456389, Recall = 0.5294117647058824, F1 = 0.6005267778753292, Common = 342.0, Retrieved = 493.0, Relevant = 646.0
 ----------------------------------------------------------
-BASELINE + LEM + STEM (same if remove LEM)
+BASELINE + POS + BIGRAM
 
-              precision    recall  f1-score   support
-
-           B       0.84      0.64      0.73       646
-           I       0.81      0.50      0.62       403
-           O       0.96      0.99      0.98      9438
-
-    accuracy                           0.95     10487
-   macro avg       0.87      0.71      0.77     10487
-weighted avg       0.95      0.95      0.95     10487
-
+Precision = 0.7703252032520326, Recall = 0.586687306501548, F1 = 0.6660808435852372, Common = 379.0, Retrieved = 492.0, Relevant = 646.0
 ----------------------------------------------------------
-BASELINE + LEM + STEM + SUPER
+BASELINE + POS + BIGRAM + (LEM/STEM)
 
-              precision    recall  f1-score   support
-
-           B       0.84      0.64      0.73       646
-           I       0.78      0.50      0.61       403
-           O       0.96      0.99      0.98      9438
-
-    accuracy                           0.95     10487
-   macro avg       0.86      0.71      0.77     10487
-weighted avg       0.95      0.95      0.95     10487
-
+Precision = 0.7661290322580645, Recall = 0.5882352941176471, F1 = 0.6654991243432574, Common = 380.0, Retrieved = 496.0, Relevant = 646.0
 ----------------------------------------------------------
-BASELINE + LEM + STEM + SUPER + COMPAR
+BASELINE + POS + BIGRAM + (LEM/STEM) + Stopword Check (Increases F1 on Laptop)
 
-              precision    recall  f1-score   support
-
-           B       0.85      0.65      0.73       646
-           I       0.81      0.51      0.63       403
-           O       0.96      0.99      0.98      9438
-
-    accuracy                           0.95     10487
-   macro avg       0.87      0.72      0.78     10487
-weighted avg       0.95      0.95      0.95     10487
-
+Precision = 0.7701612903225806, Recall = 0.5913312693498453, F1 = 0.6690017513134852, Common = 382.0, Retrieved = 496.0, Relevant = 646.0
 ----------------------------------------------------------
-BASELINE + LEM + STEM + SUPER + COMPAR + STOP
+BASELINE + POS + BIGRAM + (LEM/STEM) + Polarity (Polarity increases F1 on Laptop)
 
-              precision    recall  f1-score   support
-
-           B       0.84      0.65      0.73       646
-           I       0.78      0.51      0.61       403
-           O       0.96      0.99      0.98      9438
-
-    accuracy                           0.95     10487
-   macro avg       0.86      0.71      0.77     10487
-weighted avg       0.95      0.95      0.95     10487
-
-----------------------------------------------------------
-
-----------------------------------------------------------
-
-----------------------------------------------------------
-
-----------------------------------------------------------
-
-----------------------------------------------------------
-
-----------------------------------------------------------
-
-----------------------------------------------------------
-
-----------------------------------------------------------
-
+Precision = 0.7751004016064257, Recall = 0.5975232198142415, F1 = 0.6748251748251748, Common = 386.0, Retrieved = 498.0, Relevant = 646.0
 ----------------------------------------------------------
