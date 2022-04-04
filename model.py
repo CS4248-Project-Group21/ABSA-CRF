@@ -24,6 +24,9 @@ LAPTOP_TEST_DIRECTORY = "data/test_data/Laptops_Test_Truth.xml"
 # nltk.download('vader_lexicon')
 class CNFModel:
 
+    '''
+        Change desired directory here to test on restaurant/laptop
+    '''
     def __init__(self, train_directory=RESTAURANT_TRAIN_DIRECTORY, test_directory=RESTAURANT_TEST_DIRECTORY):
         self.preprocessed = Preprocessor(train_directory, test_directory)
         self.train_data = self.preprocessed.train_data
@@ -130,6 +133,9 @@ class CNFModel:
             lst.append(token_ner_info)
         return lst
 
+    '''
+        Helper function to build a freq count of all the words in training/test corpus
+    '''
     def build_corpus_freq(self):
         freq_lst = {}
         for sentence in self.train_data:
