@@ -49,65 +49,58 @@ class CNFModel:
             current_pos = sentence[i][1]
             #current_word_ner = list_tokens_NER[i]
             polarity_score = sentiment_analyzer.polarity_scores(current_word)
-
-
             lemmatizer = WordNetLemmatizer()
             stemmer = PorterStemmer()
 
-            # Features relevant to the CURRENT token in sentence
-            features = [
-                'bias',
-                'word.lower=' + current_word.lower(),
-                'word[-3:]=' + current_word[-3:],
-                'word[-2:]=' + current_word[-2:],
-                'word.istitle=%s' % current_word.istitle(),
-                'word.isdigit=%s' % current_word.isdigit(),
-                'word.isupper=%s' % current_word.isupper(),
-                'word.lemmatized=' + lemmatizer.lemmatize(current_word),
-                'word.stemmed=' + stemmer.stem(current_word),
-                'word.isStopword=%s' % self.isStopword(current_word),
-                'word.positivityscore=%s' % polarity_score['pos'],
-                'word.negativityscore=%s' % polarity_score['neg'],
-                'word.isFrequent=%s' % (1 if self.corpus_freq[current_word] > 3 else 0),
-                #'word.nerlabel=' + current_word_ner,
-                'pos.isSuperlative=%s' % self.isSuperlative(current_pos),
-                'pos.isComparative=%s' % self.isComparative(current_pos),
-                'postag=' + current_pos,
-                'postag[:2]=' + current_pos[:2],
-            ]
+            features = {
+                'bias': 1.0,
+                'word.lower()': current_word.lower(),
+                'word[-3:]': current_word[-3:],
+                'word[-2:]': current_word[-2:],
+                'word.istitle': current_word.istitle(),
+                'word.isdigit': current_word.isdigit(),
+                'word.isupper': current_word.isupper(),
+                'word.lemmatized': lemmatizer.lemmatize(current_word),
+                'word.stemmed': stemmer.stem(current_word),
+                'word.isStopWord': self.isStopword(current_word),
+                #'word.isFrequent': self.corpus_freq[current_word] > 3,
+                'word.positivityscore': polarity_score['pos'],
+                'word.negativityscore': polarity_score['neg'],
+                'postag': current_pos,
+                'postag[:2]': current_pos[:2]
+            }
 
             # Features for words that are not at the beginning of a sentence
             if i > 0:
                 prev_word = sentence[i - 1][0]
                 previous_pos = sentence[i - 1][1]
-                features.extend([
-                    '-1:word.lower=' + prev_word.lower(),
-                    '-1:word.istitle=%s' % prev_word.istitle(),
-                    '-1:word.isdigit=%s' % prev_word.isdigit(),
-                    '-1:word.isupper=%s' % prev_word.isupper(),
-                    '-1:postag=' + previous_pos,
-                    '-1:postag[:2]=' + previous_pos[:2],
-                ])
+                features.update({
+                    '-1:word.lower=': prev_word.lower(),
+                    '-1:word.istitle=%s': prev_word.istitle(),
+                    '-1:word.isdigit=%s': prev_word.isdigit(),
+                    '-1:word.isupper=%s': prev_word.isupper(),
+                    '-1:postag=': previous_pos,
+                    '-1:postag[:2]=': previous_pos[:2],
+                })
             else:
-                features.append('BOS')
+                features['BOS'] = True
 
             # Features for words that are not at the end of a sentence
             if i < len(sentence) - 1:
                 next_word = sentence[i + 1][0]
                 next_pos = sentence[i + 1][1]
-                features.extend([
-                    '+1:word.lower=' + next_word.lower(),
-                    '+1:word.istitle=%s' % next_word.istitle(),
-                    '+1:word.isdigit=%s' % next_word.isdigit(),
-                    '+1:word.isupper=%s' % next_word.isupper(),
-                    '+1:postag=' + next_pos,
-                    '+1:postag[:2]=' + next_pos[:2],
-                ])
+                features.update({
+                    '+1:word.lower=': next_word.lower(),
+                    '+1:word.istitle=%s': next_word.istitle(),
+                    '+1:word.isdigit=%s': next_word.isdigit(),
+                    '+1:word.isupper=%s': next_word.isupper(),
+                    '+1:postag=': next_pos,
+                    '+1:postag[:2]=': next_pos[:2],
+                })
             else:
-                features.append('EOS')
+                features['EOS'] = True
 
             all_features.append(features)
-
 
         return all_features
 
