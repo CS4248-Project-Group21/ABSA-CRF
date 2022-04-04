@@ -26,7 +26,6 @@ class CNFBaselineModel:
 
     def word2features(self, sentence, i):
         current_word = sentence[i][0]
-        current_pos = sentence[i][1]
 
         # Features relevant to the CURRENT token in sentence
         features = [
@@ -37,39 +36,7 @@ class CNFBaselineModel:
             'word.istitle=%s' % current_word.istitle(),
             'word.isdigit=%s' % current_word.isdigit(),
             'word.isupper=%s' % current_word.isupper(),
-            'postag=' + current_pos,
-            'postag[:2]=' + current_pos[:2],
         ]
-
-        # Features for words that are not at the beginning of a sentence
-        if i > 0:
-            prev_word = sentence[i - 1][0]
-            previous_pos = sentence[i - 1][1]
-            features.extend([
-                '-1:word.lower=' + prev_word.lower(),
-                '-1:word.istitle=%s' % prev_word.istitle(),
-                '-1:word.isdigit=%s' % prev_word.isdigit(),
-                '-1:word.isupper=%s' % prev_word.isupper(),
-                '-1:postag=' + previous_pos,
-                '-1:postag[:2]=' + previous_pos[:2],
-            ])
-        else:
-            features.append('BOS')
-
-        # Features for words that are not at the end of a sentence
-        if i < len(sentence) - 1:
-            next_word = sentence[i + 1][0]
-            next_pos = sentence[i + 1][1]
-            features.extend([
-                '+1:word.lower=' + next_word.lower(),
-                '+1:word.istitle=%s' % next_word.istitle(),
-                '+1:word.isdigit=%s' % next_word.isdigit(),
-                '+1:word.isupper=%s' % next_word.isupper(),
-                '+1:postag=' + next_pos,
-                '+1:postag[:2]=' + next_pos[:2],
-            ])
-        else:
-            features.append('EOS')
 
         return features
 
