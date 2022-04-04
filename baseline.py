@@ -48,7 +48,7 @@ class CNFBaselineModel:
         return [self.word2features(sentence, i) for i in range(len(sentence))]
 
     def get_label(self, sentence):
-        return [label for (token, pos, label) in sentence]
+        return [label for (token, pos, dep, label) in sentence]
 
     def train_model(self):
         X_train = [self.extract_features(sentence) for sentence in self.train_data]

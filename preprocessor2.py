@@ -37,6 +37,23 @@ class Preprocessor2:
 
         print("Preprocessed Test data...")
 
+    def expand_contractions(self, text, contraction_mapping=CONTRACTION_MAP):
+        contractions_pattern = re.compile('({})'.format('|'.join(contraction_mapping.keys())),
+                                          flags=re.IGNORECASE | re.DOTALL)
+
+        def expand_match(contraction):
+            match = contraction.group(0)
+            first_char = match[0]
+            expanded_contraction = contraction_mapping.get(match) \
+                if contraction_mapping.get(match) \
+                else contraction_mapping.get(match.lower())
+            expanded_contraction = first_char + expanded_contraction[1:]
+            return expanded_contraction
+
+        expanded_text = contractions_pattern.sub(expand_match, text)
+        expanded_text = re.sub("'", "", expanded_text)
+        return expanded_text
+
     def build_corpus(self, soup_used):
         docs = []
         nlp = spacy.load("en_core_web_sm")
@@ -62,7 +79,7 @@ class Preprocessor2:
 
             for token in tokenized_sentence:
                 if len(aspectTerms) == 0: # sentence has no aspect terms
-                    labelled_sentence.append((token.text, token.pos_, 'O'))
+                    labelled_sentence.append((token.text, token.pos_, token.dep_, 'O'))
                 else:
                     # sentence has at least 1 aspect term
                     match = False
@@ -84,34 +101,17 @@ class Preprocessor2:
 
                     if match:
                         if match_idx == 0:
-                            labelled_sentence.append((token.text, token.pos_, 'B'))
+                            labelled_sentence.append((token.text, token.pos_, token.dep_, 'B'))
                         else:
-                            labelled_sentence.append((token.text, token.pos_, 'I'))
+                            labelled_sentence.append((token.text, token.pos_, token.dep_, 'I'))
                     else:
-                        labelled_sentence.append((token.text, token.pos_, 'O'))
+                        labelled_sentence.append((token.text, token.pos_, token.dep_, 'O'))
 
 
 
             docs.append(labelled_sentence)
 
         return docs
-
-    def expand_contractions(self, text, contraction_mapping=CONTRACTION_MAP):
-        contractions_pattern = re.compile('({})'.format('|'.join(contraction_mapping.keys())),
-                                          flags=re.IGNORECASE | re.DOTALL)
-
-        def expand_match(contraction):
-            match = contraction.group(0)
-            first_char = match[0]
-            expanded_contraction = contraction_mapping.get(match) \
-                if contraction_mapping.get(match) \
-                else contraction_mapping.get(match.lower())
-            expanded_contraction = first_char + expanded_contraction[1:]
-            return expanded_contraction
-
-        expanded_text = contractions_pattern.sub(expand_match, text)
-        expanded_text = re.sub("'", "", expanded_text)
-        return expanded_text
 
 
 if __name__ == "__main__":

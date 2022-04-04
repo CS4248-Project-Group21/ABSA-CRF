@@ -37,7 +37,7 @@ class CNFModel:
         self.corpus_freq = self.build_corpus_freq()
 
 
-    # sentence = [(w1, pos, bio_label),(w2, pos, bio_label),...,(wn, pos, bio_label)]
+    # sentence = [(w1, pos, dep, bio_label), (w2, pos, dep, bio_label),...,(wn, pos, dep, bio_label)]
     def extract_features(self, sentence):
 
         sentiment_analyzer = SentimentIntensityAnalyzer()
@@ -47,6 +47,7 @@ class CNFModel:
         for i in range(len(sentence)):
             current_word = sentence[i][0]
             current_pos = sentence[i][1]
+            current_dep = sentence[i][2]
             polarity_score = sentiment_analyzer.polarity_scores(current_word)
             lemmatizer = WordNetLemmatizer()
             stemmer = PorterStemmer()
@@ -65,6 +66,10 @@ class CNFModel:
                 'word.isFrequent': self.corpus_freq[current_word] > 4,
                 'word.positivityscore': polarity_score['pos'],
                 'word.negativityscore': polarity_score['neg'],
+                'word.is_dobj': current_dep == 'dobj',
+                'word.is_iobj': current_dep == 'iobj',
+                'word.is_nsubj': current_dep == 'nsubj',
+                'word.is_conj': current_word == 'conj',
                 'postag': current_pos,
                 'postag[:2]': current_pos[:2]
             }
@@ -131,13 +136,13 @@ class CNFModel:
     def build_corpus_freq(self):
         freq_lst = {}
         for sentence in self.train_data:
-            for word, pos, label in sentence:
+            for word, pos, dep, label in sentence:
                 if word not in freq_lst:
                     freq_lst[word] = 0
                 freq_lst[word] += 1
 
         for sentence2 in self.test_data:
-            for word2, pos2, label2 in sentence2:
+            for word2, pos2, dep2, label2 in sentence2:
                 if word2 not in freq_lst:
                     freq_lst[word2] = 0
                 freq_lst[word2] += 1
@@ -145,7 +150,7 @@ class CNFModel:
         return freq_lst
 
     def get_label(self, sentence):
-        return [label for (token, pos, label) in sentence]
+        return [label for (token, pos, dep, label) in sentence]
 
     def isSuperlative(self, pos):
         superlatives = ['JJS', 'RBS']
