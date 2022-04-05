@@ -26,16 +26,19 @@ class Preprocessor2:
         with codecs.open(test_file_directory, "r", "utf-8") as test_file:
             self.test_soup = bs(test_file, "html5lib")
 
+        self.data_set_used = "RESTAURANT" if train_file_directory == RESTAURANT_TRAIN_DIRECTORY else "LAPTOP"
+
+        print("Evaluating %s SemEVAL dataset" % self.data_set_used)
 
         # contains data of all training sentences, each sentence broken down into individual (word, pos, bio_tag)
         self.train_data = self.build_corpus(self.train_soup)
-
         print("Preprocessed Train data...")
+        print("Train Corpus = %s Sentences" % len(self.train_data))
 
         # contains data of all test sentences
         self.test_data = self.build_corpus(self.test_soup)
-
         print("Preprocessed Test data...")
+        print("Test Corpus = %s Sentences" % len(self.test_data))
 
     def expand_contractions(self, text, contraction_mapping=CONTRACTION_MAP):
         contractions_pattern = re.compile('({})'.format('|'.join(contraction_mapping.keys())),
@@ -79,7 +82,7 @@ class Preprocessor2:
 
             for token in tokenized_sentence:
                 if len(aspectTerms) == 0: # sentence has no aspect terms
-                    labelled_sentence.append((token.text, token.pos_, token.dep_, 'O'))
+                    labelled_sentence.append((token.text, token.pos_, token.dep_, self.get_token_ner(token), 'O'))
                 else:
                     # sentence has at least 1 aspect term
                     match = False
@@ -101,19 +104,25 @@ class Preprocessor2:
 
                     if match:
                         if match_idx == 0:
-                            labelled_sentence.append((token.text, token.pos_, token.dep_, 'B'))
+                            labelled_sentence.append((token.text, token.pos_, token.dep_, self.get_token_ner(token), 'B'))
                         else:
-                            labelled_sentence.append((token.text, token.pos_, token.dep_, 'I'))
+                            labelled_sentence.append((token.text, token.pos_, token.dep_, self.get_token_ner(token), 'I'))
                     else:
-                        labelled_sentence.append((token.text, token.pos_, token.dep_, 'O'))
-
-
+                        labelled_sentence.append((token.text, token.pos_, token.dep_, self.get_token_ner(token), 'O'))
 
             docs.append(labelled_sentence)
 
         return docs
 
+    def get_token_ner(self, token):
+        token_NER_IOB = token.ent_iob_
+        token_NER_type = token.ent_type_
+
+        if token_NER_IOB == 'O':
+            return token_NER_IOB
+        else:
+            return token_NER_IOB + "-" + token_NER_type
+
 
 if __name__ == "__main__":
-    pp = Preprocessor2(RESTAURANT_TRAIN_DIRECTORY, RESTAURANT_TEST_DIRECTORY)
-    print(pp.train_data)
+    pp = Preprocessor2(LAPTOP_TRAIN_DIRECTORY, LAPTOP_TEST_DIRECTORY)

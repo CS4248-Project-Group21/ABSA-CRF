@@ -2,11 +2,8 @@ from preprocessor import Preprocessor
 from preprocessor2 import Preprocessor2
 
 import pycrfsuite
-import nltk
 import numpy as np
-import spacy
-import string
-import copy
+
 
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
@@ -37,7 +34,7 @@ class CNFModel:
         self.corpus_freq = self.build_corpus_freq()
 
 
-    # sentence = [(w1, pos, dep, bio_label), (w2, pos, dep, bio_label),...,(wn, pos, dep, bio_label)]
+    # sentence = [(w1, pos, dep, NER, bio_label), (w2, pos, dep, NER, bio_label),...,(wn, pos, dep, NER, bio_label)]
     def extract_features(self, sentence):
 
         sentiment_analyzer = SentimentIntensityAnalyzer()
@@ -48,6 +45,7 @@ class CNFModel:
             current_word = sentence[i][0]
             current_pos = sentence[i][1]
             current_dep = sentence[i][2]
+            current_ner = sentence[i][3]
             polarity_score = sentiment_analyzer.polarity_scores(current_word)
             lemmatizer = WordNetLemmatizer()
             stemmer = PorterStemmer()
@@ -60,18 +58,19 @@ class CNFModel:
                 'word.istitle': current_word.istitle(),
                 'word.isdigit': current_word.isdigit(),
                 'word.isupper': current_word.isupper(),
+                'postag': current_pos,
+                'postag[:2]': current_pos[:2],
                 'word.lemmatized': lemmatizer.lemmatize(current_word),
                 'word.stemmed': stemmer.stem(current_word),
-                'word.isStopWord': self.isStopword(current_word),
-                'word.isFrequent': self.corpus_freq[current_word] > 4,
                 'word.positivityscore': polarity_score['pos'],
                 'word.negativityscore': polarity_score['neg'],
-                'word.is_dobj': current_dep == 'dobj',
-                'word.is_iobj': current_dep == 'iobj',
-                'word.is_nsubj': current_dep == 'nsubj',
-                'word.is_conj': current_word == 'conj',
-                'postag': current_pos,
-                'postag[:2]': current_pos[:2]
+                'word.isStopWord': self.isStopword(current_word),
+                'word.isFrequent': self.corpus_freq[current_word] > 4,
+                #'word.is_dobj': current_dep == 'dobj',
+                #'word.is_iobj': current_dep == 'iobj',
+                #'word.is_nsubj': current_dep == 'nsubj',
+                #'word.is_conj': current_word == 'conj',
+                'word.NER': current_ner
             }
 
             # Features for words that are not at the beginning of a sentence
@@ -108,41 +107,19 @@ class CNFModel:
 
         return all_features
 
-    def get_tokens_NER(self, sentence, parser):
-        word_tokens = [tup[0] for tup in sentence]
-        full_sentence = " ".join(word_tokens)
-        doc = parser(full_sentence)
-
-        lst = []
-        for i in range(len(doc)):
-
-            # Entity BIO labels of token (might not be same as Aspect Labelled BIO tag)
-            # 'B' if token = start of labelled entity, 'I' if token = inside an entity, 'O' if token != entity
-            token_NER_IOB = doc[i].ent_iob_
-
-            if token_NER_IOB == 'O':
-                token_ner_info = (doc[i].text, token_NER_IOB)  # e.g ('nice', 'O')
-
-            # token has an entity type, add according to its IOB label (if token is inside a multi-word entity)
-            else:
-                token_ner_info = (doc[i].text, token_NER_IOB + "-" + doc[i].ent_type_)  # e.g ('San', 'B-GPE'), ('Francisco', 'I-GPE')
-
-            lst.append(token_ner_info)
-        return lst
-
     '''
         Helper function to build a freq count of all the words in training/test corpus
     '''
     def build_corpus_freq(self):
         freq_lst = {}
         for sentence in self.train_data:
-            for word, pos, dep, label in sentence:
+            for word, pos, dep, ner, label in sentence:
                 if word not in freq_lst:
                     freq_lst[word] = 0
                 freq_lst[word] += 1
 
         for sentence2 in self.test_data:
-            for word2, pos2, dep2, label2 in sentence2:
+            for word2, pos2, dep2, ner2, label2 in sentence2:
                 if word2 not in freq_lst:
                     freq_lst[word2] = 0
                 freq_lst[word2] += 1
@@ -150,7 +127,7 @@ class CNFModel:
         return freq_lst
 
     def get_label(self, sentence):
-        return [label for (token, pos, dep, label) in sentence]
+        return [label for (token, pos, dep, ner, label) in sentence]
 
     def isSuperlative(self, pos):
         superlatives = ['JJS', 'RBS']
@@ -171,8 +148,10 @@ class CNFModel:
 
     def train_model(self):
         print("Training Model...")
-        X_train = [self.extract_features(sentence) for sentence in self.train_data]
-        y_train = [self.get_label(sentence) for sentence in self.train_data]
+        X = [self.extract_features(sentence) for sentence in self.train_data]
+        y = [self.get_label(sentence) for sentence in self.train_data]
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=150, random_state=2)
 
         print('Generated Training Features + Labels...')
         trainer = pycrfsuite.Trainer(verbose=False)
@@ -196,6 +175,22 @@ class CNFModel:
         trainer.train('crf.model')
         print("Finished training model...")
 
+        tagger = pycrfsuite.Tagger()
+        tagger.open('crf.model')
+
+        y_pred = [tagger.tag(xseq) for xseq in X_test]
+        labels = {"B": 0, 'I': 1, 'O': 2}  # row indexes for position of labels in the classification matrix
+
+        predictions = np.array([labels[tag] for row in y_pred for tag in row])
+        truths = np.array([labels[tag] for row in y_test for tag in row])
+
+        print("------------------------------------------------ VALIDATION RESULTS ------------------------------------------------")
+        print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
+        new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
+        new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
+
+        print(self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
+
     def predict(self):
         print("Predicting Model...")
         X_test = [self.extract_features(sentence) for sentence in self.test_data]
@@ -211,6 +206,8 @@ class CNFModel:
 
         predictions = np.array([labels[tag] for row in y_pred for tag in row])
         truths = np.array([labels[tag] for row in y_test for tag in row])
+
+        print("------------------------------------------------ SEMEVAL RESULTS ------------------------------------------------")
         print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
 
         new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
