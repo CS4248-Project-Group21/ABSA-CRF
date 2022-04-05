@@ -66,10 +66,10 @@ class CNFModel:
                 'word.negativityscore': polarity_score['neg'],
                 'word.isStopWord': self.isStopword(current_word),
                 'word.isFrequent': self.corpus_freq[current_word] > 4,
-                #'word.is_dobj': current_dep == 'dobj',
-                #'word.is_iobj': current_dep == 'iobj',
-                #'word.is_nsubj': current_dep == 'nsubj',
-                #'word.is_conj': current_word == 'conj',
+                'word.is_dobj': current_dep == 'dobj',
+                'word.is_iobj': current_dep == 'iobj',
+                'word.is_nsubj': current_dep == 'nsubj',
+                'word.is_conj': current_word == 'conj',
                 'word.NER': current_ner
             }
 
@@ -128,18 +128,6 @@ class CNFModel:
 
     def get_label(self, sentence):
         return [label for (token, pos, dep, ner, label) in sentence]
-
-    def isSuperlative(self, pos):
-        superlatives = ['JJS', 'RBS']
-        if pos in superlatives:
-            return True
-        return False
-
-    def isComparative(self, pos):
-        comparatives = ['JJR', 'RBR']
-        if pos in comparatives:
-            return True
-        return False
 
     def isStopword(self, token):
         if token in set(stopwords.words('english')):
