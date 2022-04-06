@@ -65,11 +65,10 @@ class CNFModel:
                 'word.positivityscore': polarity_score['pos'],
                 'word.negativityscore': polarity_score['neg'],
                 'word.isStopWord': self.isStopword(current_word),
-                'word.isFrequent': self.corpus_freq[current_word] > 4,
+                'word.isFrequent': self.isTokenFrequent(current_word),
                 'word.is_dobj': current_dep == 'dobj',
                 'word.is_iobj': current_dep == 'iobj',
                 'word.is_nsubj': current_dep == 'nsubj',
-                'word.is_conj': current_word == 'conj',
                 'word.NER': current_ner
             }
 
@@ -118,13 +117,13 @@ class CNFModel:
                     freq_lst[word] = 0
                 freq_lst[word] += 1
 
-        for sentence2 in self.test_data:
-            for word2, pos2, dep2, ner2, label2 in sentence2:
-                if word2 not in freq_lst:
-                    freq_lst[word2] = 0
-                freq_lst[word2] += 1
-
         return freq_lst
+
+    def isTokenFrequent(self, token):
+        if token in self.corpus_freq:
+            return self.corpus_freq[token] > 4
+        return False
+
 
     def get_label(self, sentence):
         return [label for (token, pos, dep, ner, label) in sentence]
@@ -151,7 +150,7 @@ class CNFModel:
             'c1': 0.1,
 
             # coefficient for L2 penalty
-            'c2': 0.01,
+            'c2': 0.1,
 
             # maximum number of iterations
             'max_iterations': 200,
