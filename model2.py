@@ -1,10 +1,14 @@
-from preprocessor import Preprocessor
-from preprocessor2 import Preprocessor2
+import scipy.stats
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import RandomizedSearchCV
 
-import pycrfsuite
+import sklearn_crfsuite
+from sklearn_crfsuite import scorers
+from sklearn_crfsuite import metrics
+
 import numpy as np
-from collections import Counter
-
+from preprocessor2 import Preprocessor2
 
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
@@ -20,10 +24,10 @@ RESTAURANT_TEST_DIRECTORY = "data/test_data/Restaurants_Test_Truth.xml"
 LAPTOP_TRAIN_DIRECTORY = "data/train_data/Laptop_Train_v2.xml"
 LAPTOP_TEST_DIRECTORY = "data/test_data/Laptops_Test_Truth.xml"
 
-# nltk.download('wordnet')
-# nltk.download('omw-1.4')
-# nltk.download('vader_lexicon')
-class CNFModel:
+
+
+
+class CNFModel2:
 
     '''
         Change desired directory here to test on restaurant/laptop
@@ -125,7 +129,6 @@ class CNFModel:
             return self.corpus_freq[token] > 4
         return False
 
-
     def get_label(self, sentence):
         return [label for (token, pos, dep, ner, label) in sentence]
 
@@ -142,80 +145,88 @@ class CNFModel:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=150, random_state=2)
 
         print('Generated Training Features + Labels...')
-        trainer = pycrfsuite.Trainer(verbose=False)
-        for xseq, yseq in zip(X_train, y_train):
-            trainer.append(xseq, yseq)
 
-        trainer.set_params({
-            # coefficient for L1 penalty
-            'c1': 0.1,
+        crf = sklearn_crfsuite.CRF(
+            algorithm='lbfgs',
+            max_iterations=200,
+            all_possible_transitions=True,
+        )
 
-            # coefficient for L2 penalty
-            'c2': 0.01,
+        params_space = {
+            'c1': scipy.stats.expon(scale=0.5),
+            'c2': scipy.stats.expon(scale=0.05),
+        }
 
-            # maximum number of iterations
-            'max_iterations': 200,
+        f1_scorer = make_scorer(metrics.flat_f1_score, average='weighted', labels=['B', 'I', 'O'])
 
-            # whether to include transitions that
-            # are possible, but not observed
-            'feature.possible_transitions': True
-        })
-        trainer.train('crf.model')
+        rs = RandomizedSearchCV(crf, params_space,
+                                cv=5,
+                                verbose=1,
+                                n_jobs=-1,
+                                n_iter=100,
+                                scoring=f1_scorer)
+
+        rs.fit(X_train, y_train)
+
         print("Finished training model...")
 
-        tagger = pycrfsuite.Tagger()
-        tagger.open('crf.model')
+        print('best params:', rs.best_params_)
+        print('best CV score:', rs.best_score_)
 
-        y_pred = [tagger.tag(xseq) for xseq in X_test]
-        labels = {"B": 0, 'I': 1, 'O': 2}  # row indexes for position of labels in the classification matrix
+        # y_pred = crf.predict(X_test)
+        #
+        #
+        # new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
+        # new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
+        #
+        # print('F1_Sore = %s' % self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
 
-        predictions = np.array([labels[tag] for row in y_pred for tag in row])
-        truths = np.array([labels[tag] for row in y_test for tag in row])
+        # tagger = pycrfsuite.Tagger()
+        # tagger.open('crf.model')
+        #
+        # y_pred = [tagger.tag(xseq) for xseq in X_test]
+        # labels = {"B": 0, 'I': 1, 'O': 2}  # row indexes for position of labels in the classification matrix
+        #
+        # predictions = np.array([labels[tag] for row in y_pred for tag in row])
+        # truths = np.array([labels[tag] for row in y_test for tag in row])
+        #
+        # print("------------------------------------------------ VALIDATION RESULTS ------------------------------------------------")
+        # print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
+        # new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
+        # new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
+        #
+        # print(self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
 
-        print("------------------------------------------------ VALIDATION RESULTS ------------------------------------------------")
-        print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
-        new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
-        new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
-
-        print(self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
-
-    def predict(self):
-        print("Predicting Model...")
-        X_test = [self.extract_features(sentence) for sentence in self.test_data]
-        y_test = [self.get_label(sentence) for sentence in self.test_data]
-
-        tagger = pycrfsuite.Tagger()
-        tagger.open('crf.model')
-
-        y_pred = [tagger.tag(xseq) for xseq in X_test]
-
-        print('Generated Predicted Features + Labels...')
-        labels = {"B": 0, 'I': 1, 'O': 2}  # row indexes for position of labels in the classification matrix
-
-        predictions = np.array([labels[tag] for row in y_pred for tag in row])
-        truths = np.array([labels[tag] for row in y_test for tag in row])
-
-        print("------------------------------------------------ SEMEVAL RESULTS ------------------------------------------------")
-        print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
-
-        new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
-        new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
-
-        print(self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
-
-    def check_learnt(self):
-        tagger = pycrfsuite.Tagger()
-        tagger.open('crf.model')
-
-        info = tagger.info()
-
-        print("\nTop Positive Features")
-        for (attr, label), weight in Counter(info.state_features).most_common(20):
-            print("%0.6f %-6s %s" % (weight, label, attr))
-
-        print("\nTop Negative Features")
-        for (attr2, label2), weight2 in Counter(info.state_features).most_common()[-20:]:
-            print("%0.6f %-6s %s" % (weight2, label2, attr2))
+    # def predict(self):
+    #     print("Predicting Model...")
+    #     X_test = [self.extract_features(sentence) for sentence in self.test_data]
+    #     y_test = [self.get_label(sentence) for sentence in self.test_data]
+    #
+    #     tagger = pycrfsuite.Tagger()
+    #     tagger.open('crf.model')
+    #
+    #     y_pred = [tagger.tag(xseq) for xseq in X_test]
+    #
+    #     print('Generated Predicted Features + Labels...')
+    #     labels = {"B": 0, 'I': 1, 'O': 2}  # row indexes for position of labels in the classification matrix
+    #
+    #     predictions = np.array([labels[tag] for row in y_pred for tag in row])
+    #     truths = np.array([labels[tag] for row in y_test for tag in row])
+    #
+    #     print("------------------------------------------------ SEMEVAL RESULTS ------------------------------------------------")
+    #     print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
+    #
+    #     new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
+    #     new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
+    #
+    #     print(self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
+    #
+    # def check_learnt(self):
+    #     tagger = pycrfsuite.Tagger()
+    #     tagger.open('crf.model')
+    #
+    #     info = tagger.info()
+    #     pass
 
     '''
         Helper Function to Change Bio label to numerical values. "O" = 0, "B" = 1, "I" = 2
@@ -261,14 +272,9 @@ class CNFModel:
         r = common / relevant
         f1 = (1 + (b ** 2)) * p * r / ((p * b ** 2) + r) if p > 0 and r > 0 else 0.
 
-        text = "Precision = {pre}, Recall = {rec}, F1 = {f1_score}," \
-               " Common = {com}, Retrieved = {ret}, Relevant = {rel}".format(pre=p, rec=r, f1_score=f1, com=common,
-                                                                             ret=retrieved, rel=relevant)
-        return text
+        return f1
 
 
 if __name__ == "__main__":
-    model = CNFModel()
+    model = CNFModel2()
     model.train_model()
-    model.predict()
-    model.check_learnt()

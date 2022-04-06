@@ -38,8 +38,8 @@ class CNFBaselineModel:
             'word.istitle': current_word.istitle(),
             'word.isdigit': current_word.isdigit(),
             'word.isupper': current_word.isupper(),
-            #'postag': current_pos,
-            #'postag[:2]': current_pos[:2]
+            'postag': current_pos,
+            'postag[:2]': current_pos[:2]
         }
 
         return features

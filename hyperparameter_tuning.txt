@@ -1,0 +1,26 @@
+
+Hyper-Parameter tuning for L1 & L2 Regularization
+
+10 mins to run
+
+-------------- Restaurant Dataset -------------
+
+All features Model
+    3 Fold Cross Validation, 50 iterations each
+    Best C1 = 0.06773372192538497
+    Best C2 = 0.23625919000819567
+
+    Validation: Precision = 0.797752808988764, Recall = 0.7473684210526316, F1 = 0.7717391304347826, Common = 142.0, Retrieved = 178.0, Relevant = 190.0
+    SemEval:    Precision = 0.8241650294695482, Recall = 0.7372583479789103, F1 = 0.7782931354359927, Common = 839.0, Retrieved = 1018.0, Relevant = 1138.0
+
+
+
+-------------- Laptop Dataset -------------
+
+All features Model
+    3 Fold Cross Validation, 50 iterations each
+    Best C1 = 0.12220644241635888
+    Best C2 = 0.16623498594581765
+
+    Validation:
+    SemEval:
