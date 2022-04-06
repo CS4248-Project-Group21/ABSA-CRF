@@ -8,6 +8,12 @@ from bs4.element import Tag
 
 from contractions import CONTRACTION_MAP
 
+RESTAURANT_TRAIN_DIRECTORY = "data/train_data/Restaurants_Train_v2.xml"
+RESTAURANT_TEST_DIRECTORY = "data/test_data/Restaurants_Test_Truth.xml"
+
+LAPTOP_TRAIN_DIRECTORY = "data/train_data/Laptop_Train_v2.xml"
+LAPTOP_TEST_DIRECTORY = "data/test_data/Laptops_Test_Truth.xml"
+
 class Preprocessor:
 
     def __init__(self, train_file_directory, test_file_directory):
@@ -22,8 +28,21 @@ class Preprocessor:
         # contains data of all training sentences, each sentence broken down into individual (word, pos, bio_tag)
         self.train_data = self.build_corpus(self.train_soup)
 
+        self.train_data_full_sentence = self.get_original_sentences(self.train_soup)
+
         # contains data of all test sentences
         self.test_data = self.build_corpus(self.test_soup)
+
+        self.test_data_full_sentence = self.get_original_sentences(self.test_soup)
+
+    def get_original_sentences(self, soup_used):
+        corpus = []
+
+        for elem in soup_used.find_all("sentence"):
+            for text in elem.find("text"):
+                corpus.append(self.expand_contractions(str(text)))
+
+        return corpus
 
     def find_all_occurrences(self, aspectTerms, text):
         lst = []
@@ -69,15 +88,25 @@ class Preprocessor:
 
                 tokens = nltk.word_tokenize(self.expand_contractions(modified_text))
 
+                print("Aspect List = %s" % aspectTermsLst)
+
                 for token in tokens:
                     word = token.strip(string.punctuation)
                     if len(word) != 0:
                         updated_tokens.append(word)
 
+
+
                 for i in range(len(updated_tokens)):
                     if updated_tokens[i] == "ASPECT":
                         updated_tokens[i] = aspectTermsLst[0]
                         aspectTermsLst.pop(0)
+
+
+                print("Mod = ", modified_text)
+                print("Original = ", text)
+                print(updated_tokens)
+                print("---------------------------------------------")
 
                 for token in updated_tokens:
                     # Remove punctuations except for special cases such as 17-inch, "sales" team
@@ -114,3 +143,7 @@ class Preprocessor:
 
         return corpus
 
+## To test out preprocessor class
+if __name__ == "__main__":
+    pp = Preprocessor(RESTAURANT_TRAIN_DIRECTORY, RESTAURANT_TEST_DIRECTORY)
+    print(pp.train_data_full_sentence)

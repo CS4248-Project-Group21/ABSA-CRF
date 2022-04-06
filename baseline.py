@@ -1,4 +1,5 @@
 from preprocessor import Preprocessor
+from preprocessor2 import Preprocessor2
 
 import pycrfsuite
 import nltk
@@ -20,7 +21,7 @@ class CNFBaselineModel:
         Change desired directory here to test on restaurant/laptop
     '''
     def __init__(self, train_directory=LAPTOP_TRAIN_DIRECTORY, test_directory=LAPTOP_TEST_DIRECTORY):
-        self.preprocessed = Preprocessor(train_directory, test_directory)
+        self.preprocessed = Preprocessor2(train_directory, test_directory)
         self.train_data = self.preprocessed.train_data
         self.test_data =  self.preprocessed.test_data
 
@@ -37,6 +38,8 @@ class CNFBaselineModel:
             'word.istitle': current_word.istitle(),
             'word.isdigit': current_word.isdigit(),
             'word.isupper': current_word.isupper(),
+            #'postag': current_pos,
+            #'postag[:2]': current_pos[:2]
         }
 
         return features
@@ -45,11 +48,16 @@ class CNFBaselineModel:
         return [self.word2features(sentence, i) for i in range(len(sentence))]
 
     def get_label(self, sentence):
-        return [label for (token, pos, label) in sentence]
+        return [label for (token, pos, dep, ner, label) in sentence]
 
     def train_model(self):
-        X_train = [self.extract_features(sentence) for sentence in self.train_data]
-        y_train = [self.get_label(sentence) for sentence in self.train_data]
+        print("Training Model...")
+        X = [self.extract_features(sentence) for sentence in self.train_data]
+        y = [self.get_label(sentence) for sentence in self.train_data]
+
+        print('Generated Training Features + Labels...')
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=150, random_state=2)
 
         trainer = pycrfsuite.Trainer(verbose=False)
         for xseq, yseq in zip(X_train, y_train):
@@ -72,10 +80,6 @@ class CNFBaselineModel:
         trainer.train('crf.model')
         print("Finished training model")
 
-    def predict(self):
-        X_test = [self.extract_features(sentence) for sentence in self.test_data]
-        y_test = [self.get_label(sentence) for sentence in self.test_data]
-
         tagger = pycrfsuite.Tagger()
         tagger.open('crf.model')
 
@@ -84,6 +88,31 @@ class CNFBaselineModel:
 
         predictions = np.array([labels[tag] for row in y_pred for tag in row])
         truths = np.array([labels[tag] for row in y_test for tag in row])
+
+        print("------------------------------------------------ VALIDATION RESULTS ------------------------------------------------")
+        print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
+        new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
+        new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
+
+        print(self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
+
+    def predict(self):
+        print("Predicting Model...")
+        X_test = [self.extract_features(sentence) for sentence in self.test_data]
+        y_test = [self.get_label(sentence) for sentence in self.test_data]
+
+        tagger = pycrfsuite.Tagger()
+        tagger.open('crf.model')
+
+        y_pred = [tagger.tag(xseq) for xseq in X_test]
+
+        print('Generated Predicted Features + Labels...')
+        labels = {"B": 0, 'I': 1, 'O': 2}  # row indexes for position of labels in the classification matrix
+
+        predictions = np.array([labels[tag] for row in y_pred for tag in row])
+        truths = np.array([labels[tag] for row in y_test for tag in row])
+
+        print("------------------------------------------------ SEMEVAL RESULTS ------------------------------------------------")
         print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
 
         new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
