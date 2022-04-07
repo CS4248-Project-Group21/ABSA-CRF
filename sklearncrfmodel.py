@@ -1,7 +1,7 @@
 import scipy.stats
-from sklearncrfmodel.metrics import make_scorer
-from sklearncrfmodel.model_selection import cross_val_score
-from sklearncrfmodel.model_selection import RandomizedSearchCV
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import RandomizedSearchCV
 
 import sklearn_crfsuite
 from sklearn_crfsuite import scorers
