@@ -1,4 +1,3 @@
-from preprocessor import Preprocessor
 from preprocessor2 import Preprocessor2
 
 import pycrfsuite
@@ -35,6 +34,10 @@ class CNFModel:
         self.corpus_freq = self.build_corpus_freq()
 
 
+    '''
+        Customise the type of model by commenting out features below
+        E.g if Using Word Shape + POS + Bigram Model, comment out all other features
+    '''
     # sentence = [(w1, pos, dep, NER, bio_label), (w2, pos, dep, NER, bio_label),...,(wn, pos, dep, NER, bio_label)]
     def extract_features(self, sentence):
 
@@ -148,10 +151,10 @@ class CNFModel:
 
         trainer.set_params({
             # coefficient for L1 penalty
-            'c1': 0.1,
+            'c1': 0.03655,
 
             # coefficient for L2 penalty
-            'c2': 0.01,
+            'c2': 0.09558,
 
             # maximum number of iterations
             'max_iterations': 200,
@@ -210,12 +213,16 @@ class CNFModel:
         info = tagger.info()
 
         print("\nTop Positive Features")
-        for (attr, label), weight in Counter(info.state_features).most_common(20):
-            print("%0.6f %-6s %s" % (weight, label, attr))
+        counter = 1
+        for (attr, label), weight in Counter(info.state_features).most_common(100):
+            if counter < 10:
+                print("  Rank %s ---> %0.6f %-6s %s" % (counter, weight, label, attr))
+            elif counter >= 10 and counter <= 99:
+                print(" Rank %s ---> %0.6f %-6s %s" % (counter, weight, label, attr))
+            else:
+                print("Rank %s ---> %0.6f %-6s %s" % (counter, weight, label, attr))
+            counter += 1
 
-        print("\nTop Negative Features")
-        for (attr2, label2), weight2 in Counter(info.state_features).most_common()[-20:]:
-            print("%0.6f %-6s %s" % (weight2, label2, attr2))
 
     '''
         Helper Function to Change Bio label to numerical values. "O" = 0, "B" = 1, "I" = 2
@@ -271,4 +278,4 @@ if __name__ == "__main__":
     model = CNFModel()
     model.train_model()
     model.predict()
-    model.check_learnt()
+    #model.check_learnt()

@@ -1,0 +1,159 @@
+					Laptop Dataset Results (150 Sentences Validation)
+
+SemEVAL Laptop Train Corpus = 3045 - 150 Sentences
+SemEVAL Laptop Test Corpus = 800 Sentences
+
+Baseline Features:
+	1. Word Shape
+			Lowercase form
+			Word Suffix (last 3 and last 2)
+			If word is title
+			If word is digit
+			If word is upper
+
+Full Model Features
+	1. Baseline
+	2. Token Lemmatize
+	3. Token Stemming
+	4. Token Polarity Scores (Negative and Positive)
+	5. Frequent Token (>= 5 times in corpus)
+	6. If token is Stopword
+	7. Token POS Tag
+	8. Bigram Template (POS & Word Shape of prev word & next word)
+	9. Dependency Parsing
+			If token dep == ‘dobj’ (direct object)
+			If token dep == ‘iobj’ (indirect object)
+			If token dep == ‘nsubj’ (noun subj)
+			If token dep == ‘conj’ (conjunction)
+	10. Named Entity Recognition
+
+
+L1 Lasso Regularization = 0.03655
+L2 Ridge Regularization = 0.09558
+Iterations = 200
+
+BASELINE
+
+	Validation: Precision = 0.7019230769230769, Recall = 0.5572519083969466, F1 = 0.6212765957446807, Common = 73.0, Retrieved = 104.0, Relevant = 131.0
+	SemEVAL:    Precision = 0.7093275488069414, Recall = 0.5007656967840735, F1 = 0.5870736086175943, Common = 327.0, Retrieved = 461.0, Relevant = 653.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS
+
+	Validation: Precision = 0.6880733944954128, Recall = 0.5725190839694656, F1 = 0.625, Common = 75.0, Retrieved = 109.0, Relevant = 131.0
+	SemEVAL:    Precision = 0.6997885835095138, Recall = 0.5068912710566615, F1 = 0.5879218472468916, Common = 331.0, Retrieved = 473.0, Relevant = 653.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM
+
+	Validation: Precision = 0.75,               Recall = 0.6412213740458015, F1 = 0.691358024691358, Common = 84.0, Retrieved = 112.0, Relevant = 131.0
+	SemEVAL:    Precision = 0.7706611570247934, Recall = 0.5712098009188361, F1 = 0.6561125769569042, Common = 373.0, Retrieved = 484.0, Relevant = 653.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM
+
+	Validation: Precision = 0.7636363636363637, Recall = 0.6412213740458015, F1 = 0.6970954356846473, Common = 84.0, Retrieved = 110.0, Relevant = 131.0
+	SemEVAL:    Precision = 0.7780040733197556, Recall = 0.5849923430321593, F1 = 0.6678321678321678, Common = 382.0, Retrieved = 491.0, Relevant = 653.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity
+
+	Validation: Precision = 0.7636363636363637, Recall = 0.6412213740458015, F1 = 0.6970954356846473, Common = 84.0, Retrieved = 110.0, Relevant = 131.0
+	SemEVAL:    Precision = 0.7809330628803245, Recall = 0.5895865237366003, F1 = 0.6719022687609075, Common = 385.0, Retrieved = 493.0, Relevant = 653.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity + Stopword + Frequency
+
+	Validation: Precision = 0.7589285714285714, Recall = 0.648854961832061, F1 = 0.6995884773662552, Common = 85.0, Retrieved = 112.0, Relevant = 131.0
+	SemEVAL:    Precision = 0.795959595959596, Recall = 0.6033690658499234, F1 = 0.686411149825784, Common = 394.0, Retrieved = 495.0, Relevant = 653.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity + Stopword + Frequency + NER
+
+	Validation: Precision = 0.75,               Recall = 0.6412213740458015, F1 = 0.691358024691358, Common = 84.0, Retrieved = 112.0, Relevant = 131.0
+	SemEVAL:    Precision = 0.8016032064128257, Recall = 0.6125574272588055, F1 = 0.6944444444444444, Common = 400.0, Retrieved = 499.0, Relevant = 653.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity + Stopword + Frequency + Dependency
+
+	Validation: Precision = 0.7657657657657657, Recall = 0.648854961832061,  F1 = 0.7024793388429752, Common = 85.0, Retrieved = 111.0, Relevant = 131.0
+	SemEVAL:    Precision = 0.79,               Recall = 0.6049004594180705, F1 = 0.6851691240242845, Common = 395.0, Retrieved = 500.0, Relevant = 653.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity + Stopword + Frequency + Dependency + NER (BEST)
+
+	Validation: Precision = 0.7478260869565218, Recall = 0.6564885496183206, F1 = 0.6991869918699186, Common = 86.0, Retrieved = 115.0, Relevant = 131.0
+	SemEVAL:    Precision = 0.805940594059406,  Recall = 0.6232771822358346, F1 = 0.7029360967184801, Common = 407.0, Retrieved = 505.0, Relevant = 653.0
+
+
+Top Positive Features
+4.479583 I      +1:word.lower=:socket
+4.139062 I      -1:word.lower=:cleaned
+3.936949 I      +1:word.lower=:forward
+3.845406 O      +1:word.lower=:icon
+3.827978 B      -1:word.lower=:stops
+3.319313 B      -1:word.lower=:gui
+3.302932 I      -1:word.lower=:externally
+3.266858 I      -1:word.lower=:viruses
+3.141949 O      -1:word.lower=:raising
+3.074054 B      -1:word.lower=:headphones
+3.073960 I      +1:word.lower=:router
+3.045352 I      +1:word.lower=:anytime
+2.990531 I      +1:word.lower=:loud
+2.975538 B      -1:word.lower=:speed
+2.893047 I      +1:word.lower=:standpoint
+2.878707 B      word.stemmed:applic
+2.877747 B      word.stemmed:featur
+2.859302 I      -1:word.lower=:can
+2.842382 B      word.lower():speakers
+2.774046 I      +1:word.lower=:hook
+2.769292 I      -1:word.lower=:easy
+2.728128 B      word.stemmed:cost
+2.716045 I      +1:word.lower=:heals
+2.705163 O      +1:word.lower=:pops
+2.694332 O      +1:word.lower=:laptops
+2.665175 I      -1:word.lower=:versions
+2.648925 I      +1:word.lower=:them
+2.626291 B      word.stemmed:speaker
+2.566606 O      postag:ADV
+2.552103 B      -1:word.lower=:access
+
+Top Negative Features
+-1.951169 O      word.stemmed:servic
+-1.962154 O      +1:word.lower=:button
+-1.977327 I      -1:word.lower=:reader
+-2.032940 O      word.stemmed:navig
+-2.070503 O      +1:word.lower=:webpages
+-2.085339 I      BOS
+-2.110724 O      +1:word.lower=:coming
+-2.111813 O      -1:word.lower=:nicely
+-2.123860 O      +1:word.lower=:expecting
+-2.129122 O      +1:word.lower=:paint
+-2.159643 I      -1:word.lower=:use
+-2.176295 O      -1:word.lower=:techs
+-2.194332 O      word.stemmed:mous
+-2.203078 O      +1:word.lower=:bottom
+-2.229794 O      -1:word.lower=:uses
+-2.270780 O      -1:word.lower=:where
+-2.362767 B      word.isStopWord
+-2.391042 O      word[-3:]:pad
+-2.399122 I      -1:word.lower=:2
+-2.457911 O      +1:word.lower=:main
+-2.562268 O      +1:word.lower=:router
+-2.587482 O      word.stemmed:cost
+-2.664079 O      -1:word.lower=:versions
+-2.720495 O      +1:word.lower=:hook
+-2.767608 O      word.stemmed:price
+-2.862580 O      word.stemmed:charg
+-2.891812 O      word.stemmed:perform
+-2.989141 O      +1:word.lower=:loud
+-3.114680 O      -1:word.lower=:viruses
+-3.439735 O      -1:word.lower=:easy

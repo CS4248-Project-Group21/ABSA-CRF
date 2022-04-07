@@ -1,0 +1,158 @@
+					Restaurant Dataset Results (150 Sentences Validation)
+
+SemEVAL Restaurant Train Corpus = 3041 - 150 Sentences
+SemEVAL Restaurant Test Corpus = 800 Sentences
+
+Baseline Features:
+	1. Word Shape
+			Lowercase form
+			Word Suffix (last 3 and last 2)
+			If word is title
+			If word is digit
+			If word is upper
+
+Full Model Features
+	1. Baseline
+	2. Token Lemmatize
+	3. Token Stemming
+	4. Token Polarity Scores (Negative and Positive)
+	5. Frequent Token (>= 5 times in corpus)
+	6. If token is Stopword
+	7. Token POS Tag
+	8. Bigram Template (POS & Word Shape of prev word & next word)
+	9. Dependency Parsing
+			If token dep == ‘dobj’ (direct object)
+			If token dep == ‘iobj’ (indirect object)
+			If token dep == ‘nsubj’ (noun subj)
+			If token dep == ‘conj’ (conjunction)
+	10. Named Entity Recognition
+
+
+L1 Lasso Regularization = 0.01533
+L2 Ridge Regularization = 0.18581
+Iterations = 200
+
+BASELINE
+
+	Validation: Precision = 0.7530120481927711, Recall = 0.6578947368421053, F1 = 0.702247191011236, Common = 125.0, Retrieved = 166.0, Relevant = 190.0
+	SemEVAL:    Precision = 0.7870762711864406, Recall = 0.6528998242530756, F1 = 0.7137367915465898, Common = 743.0, Retrieved = 944.0, Relevant = 1138.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS
+
+	Validation: Precision = 0.7514450867052023, Recall = 0.6842105263157895, F1 = 0.7162534435261707, Common = 130.0, Retrieved = 173.0, Relevant = 190.0
+	SemEVAL:    Precision = 0.7873855544252288, Recall = 0.680140597539543, F1 = 0.7298444130127298, Common = 774.0, Retrieved = 983.0, Relevant = 1138.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM
+
+	Validation: Precision = 0.7640449438202247, Recall = 0.7157894736842105, F1 = 0.7391304347826086, Common = 136.0, Retrieved = 178.0, Relevant = 190.0
+	SemEVAL:    Precision = 0.8142292490118577, Recall = 0.7240773286467487, F1 = 0.7665116279069768, Common = 824.0, Retrieved = 1012.0, Relevant = 1138.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM
+
+	Validation: Precision = 0.768361581920904, Recall = 0.7157894736842105, F1 = 0.7411444141689373, Common = 136.0, Retrieved = 177.0, Relevant = 190.0
+	SemEVAL:    Precision = 0.8181818181818182, Recall = 0.7355008787346221, F1 = 0.7746413697362332, Common = 837.0, Retrieved = 1023.0, Relevant = 1138.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity
+
+	Validation: Precision = 0.7740112994350282, Recall = 0.7210526315789474, F1 = 0.7465940054495912, Common = 137.0, Retrieved = 177.0, Relevant = 190.0
+	SemEVAL:    Precision = 0.8196881091617934, Recall = 0.7390158172231986, F1 = 0.7772643253234751, Common = 841.0, Retrieved = 1026.0, Relevant = 1138.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity + Stopword + Frequency
+
+	Validation: Precision = 0.7740112994350282, Recall = 0.7210526315789474, F1 = 0.7465940054495912, Common = 137.0, Retrieved = 177.0, Relevant = 190.0
+	SemEVAL:    Precision = 0.8214634146341463, Recall = 0.7398945518453427, F1 = 0.778548312528895, Common = 842.0, Retrieved = 1025.0, Relevant = 1138.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity + Stopword + Frequency + NER
+
+	Validation: Precision = 0.7853107344632768, Recall = 0.7315789473684211, F1 = 0.7574931880108992, Common = 139.0, Retrieved = 177.0, Relevant = 190.0
+	SemEVAL:    Precision = 0.8203883495145631, Recall = 0.7425307557117751, F1 = 0.779520295202952, Common = 845.0, Retrieved = 1030.0, Relevant = 1138.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity + Stopword + Frequency + Dependency
+
+	Validation: Precision = 0.7873563218390804, Recall = 0.7210526315789474, F1 = 0.7527472527472527, Common = 137.0, Retrieved = 174.0, Relevant = 190.0
+	SemEVAL:    Precision = 0.8172147001934236, Recall = 0.7425307557117751, F1 = 0.778084714548803, Common = 845.0, Retrieved = 1034.0, Relevant = 1138.0
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BASELINE + POS + BIGRAM + LEM/STEM + Polarity + Stopword + Frequency + Dependency + NER
+
+	Validation: Precision = 0.7853107344632768, Recall = 0.7315789473684211, F1 = 0.7574931880108992, Common = 139.0, Retrieved = 177.0, Relevant = 190.0
+	SemEVAL:    Precision = 0.8211856171039844, Recall = 0.7425307557117751, F1 = 0.7798800184586986, Common = 845.0, Retrieved = 1029.0, Relevant = 1138.0
+
+Top Positive Features
+3.402746 O      BOS
+3.084862 B      -1:word.lower=:pricedn
+2.635356 B      -1:word.lower=:seated
+2.633226 I      +1:word.lower=:industry
+2.608832 I      +1:word.lower=:overpack
+2.588926 I      +1:word.lower=:icing
+2.577917 I      -1:word.lower=:heated
+2.514803 B      -1:word.lower=:taste
+2.472632 I      -1:word.lower=:highlighting
+2.472632 I      +1:word.lower=:fishs
+2.452866 I      -1:word.lower=:conclusion
+2.399254 B      word.stemmed:price
+2.373581 B      BOS
+2.345063 I      +1:word.lower=:ordinary
+2.285650 I      -1:word.lower=:italy
+2.262415 B      word.lemmatized:dumpling
+2.262415 B      word.stemmed:dumpl
+2.252279 O      -1:word.lower=:service
+2.243938 I      -1:word.lower=:conversations
+2.233326 I      -1:word.lower=:ways
+2.233326 I      +1:word.lower=:preparing
+2.222195 B      word.stemmed:wait
+2.210835 B      -1:word.lower=:source
+2.207684 B      word.lemmatized:reservation
+2.101079 I      -1:word.lower=:jelly
+2.094606 I      +1:word.lower=:edamames
+2.066579 O      postag:PRON
+2.051825 I      -1:word.lower=:close
+2.046950 I      -1:word.lower=:know
+2.043589 I      -1:word.lower=:back
+
+Top Negative Features
+-1.556414 O      -1:word.lower=:know
+-1.569932 B      +1:word.lower=:restaurant
+-1.608598 O      +1:word.lower=:fried
+-1.629397 O      +1:word.lower=:regular
+-1.631068 O      -1:word.lower=:left
+-1.638786 O      +1:word.lower=:egg
+-1.642275 O      word.stemmed:decor
+-1.649925 O      -1:word.lower=:me
+-1.714219 O      -1:word.lower=:spicy
+-1.715747 O      -1:word.lower=:traffic
+-1.751132 O      +1:word.lower=:simple
+-1.809556 O      +1:word.lower=:chicken
+-1.811486 O      +1:word.lower=:top
+-1.817166 O      word.stemmed:appet
+-1.821520 O      word.stemmed:reserv
+-1.839482 O      -1:word.lower=:bland
+-1.858329 B      word.isStopWord
+-1.865156 O      +1:word.lower=:oily
+-1.881339 O      -1:word.lower=:tasty
+-1.933092 O      word.stemmed:wait
+-1.941210 O      +1:word.lower=:hanger
+-1.944405 O      +1:word.lower=:problem
+-1.965682 O      -1:word.lower=:fell
+-2.089660 O      word.stemmed:portion
+-2.106907 O      word.stemmed:entertain
+-2.129482 O      -1:word.lower=:cute
+-2.149128 O      word.stemmed:serv
+-2.288255 O      -1:word.lower=:italy
+-2.329174 O      +1:word.lower=:ordinary
+-2.550721 O      word.stemmed:price

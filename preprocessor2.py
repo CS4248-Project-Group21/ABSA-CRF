@@ -15,6 +15,10 @@ RESTAURANT_TEST_DIRECTORY = "data/test_data/Restaurants_Test_Truth.xml"
 LAPTOP_TRAIN_DIRECTORY = "data/train_data/Laptop_Train_v2.xml"
 LAPTOP_TEST_DIRECTORY = "data/test_data/Laptops_Test_Truth.xml"
 
+'''
+    Note: Preprocessor  we used for our project.
+'''
+
 
 class Preprocessor2:
 

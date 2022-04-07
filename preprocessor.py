@@ -14,6 +14,11 @@ RESTAURANT_TEST_DIRECTORY = "data/test_data/Restaurants_Test_Truth.xml"
 LAPTOP_TRAIN_DIRECTORY = "data/train_data/Laptop_Train_v2.xml"
 LAPTOP_TEST_DIRECTORY = "data/test_data/Laptops_Test_Truth.xml"
 
+'''
+    Note: NOT THE PREPROCESSOR we used for our project. This is an older version.
+'''
+
+
 class Preprocessor:
 
     def __init__(self, train_file_directory, test_file_directory):
