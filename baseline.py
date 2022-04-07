@@ -4,6 +4,7 @@ from preprocessor2 import Preprocessor2
 import pycrfsuite
 import nltk
 import numpy as np
+import sklearn_crfsuite
 
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
@@ -24,6 +25,8 @@ class CNFBaselineModel:
         self.preprocessed = Preprocessor2(train_directory, test_directory)
         self.train_data = self.preprocessed.train_data
         self.test_data =  self.preprocessed.test_data
+        self.predicted = []
+        self.truth = []
 
     def word2features(self, sentence, i):
         current_word = sentence[i][0]
@@ -38,8 +41,8 @@ class CNFBaselineModel:
             'word.istitle': current_word.istitle(),
             'word.isdigit': current_word.isdigit(),
             'word.isupper': current_word.isupper(),
-            #'postag': current_pos,
-            #'postag[:2]': current_pos[:2]
+            'postag': current_pos,
+            'postag[:2]': current_pos[:2]
         }
 
         return features
@@ -65,10 +68,10 @@ class CNFBaselineModel:
 
         trainer.set_params({
             # coefficient for L1 penalty
-            'c1': 0.1,
+            'c1': 0.03655,
 
             # coefficient for L2 penalty
-            'c2': 0.01,
+            'c2': 0.09558,
 
             # maximum number of iterations
             'max_iterations': 200,
@@ -90,7 +93,7 @@ class CNFBaselineModel:
         truths = np.array([labels[tag] for row in y_test for tag in row])
 
         print("------------------------------------------------ VALIDATION RESULTS ------------------------------------------------")
-        print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
+        # print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
         new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
         new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
 
@@ -113,12 +116,47 @@ class CNFBaselineModel:
         truths = np.array([labels[tag] for row in y_test for tag in row])
 
         print("------------------------------------------------ SEMEVAL RESULTS ------------------------------------------------")
-        print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
+        # print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
 
         new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
         new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
 
         print(self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
+
+    def evaluate_SemEVAL(self):
+        X = [self.extract_features(sentence) for sentence in self.train_data]
+        y = [self.get_label(sentence) for sentence in self.train_data]
+
+        X_train, X_test_val, y_train, y_test_val = train_test_split(X, y, test_size=150, random_state=2)
+
+        print('Generated Training Features + Labels...')
+
+        crf = sklearn_crfsuite.CRF(
+            algorithm='lbfgs',
+            c1=0.03655,
+            c2=0.09558,
+            max_iterations=200,
+            all_possible_transitions=True,
+        )
+
+        crf.fit(X_train, y_train)
+
+        print('Fitted model...')
+
+        X_test = [self.extract_features(sentence) for sentence in self.test_data]
+        y_test = [self.get_label(sentence) for sentence in self.test_data]
+
+        print('Generated Test Features + Labels...')
+
+        y_pred = crf.predict(X_test)
+
+        self.predicted = y_pred
+        self.truth = y_test
+
+        new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
+        new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
+
+        print("F1 score = %s" % self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
 
     '''
         Helper Function to Change Bio label to numerical values. "O" = 0, "B" = 1, "I" = 2
@@ -169,8 +207,41 @@ class CNFBaselineModel:
                                                                              ret=retrieved, rel=relevant)
         return text
 
+    def find_different_predictions(self):
+
+        token_wrong = 0
+
+        wrong_sentences = []
+
+        printed = []
+
+        for i in range(len(self.predicted)):
+            predicted_sentence_labels = self.predicted[i]
+            truth_sentence_labels = self.truth[i]
+            original_sentence = [text for (text, pos, dep, ner, bio) in self.test_data[i]]
+
+            sentence_wrong = False
+            for j in range(len(predicted_sentence_labels)):
+                predicted_token = predicted_sentence_labels[j]
+                truth_token = truth_sentence_labels[j]
+
+                if ((truth_token == 'B') or truth_token == 'I') and (predicted_token == 'O'):
+                    token_wrong += 1
+
+                    full_sentence = ' '.join(original_sentence)
+                    if full_sentence not in printed:
+                        print("Tokens = %s" % original_sentence)
+                        print("Truth Labels     = %s" % truth_sentence_labels)
+                        print("Predicted Labels = %s" % predicted_sentence_labels)
+                        print("-------------------------------------------------------------------------------------------")
+                        printed.append(full_sentence)
+
+
+        print("Without BG Num Tokens Wrong = %s" % token_wrong)
+
+        return wrong_sentences
+
 
 if __name__ == "__main__":
     model = CNFBaselineModel()
-    model.train_model()
-    model.predict()
+    model.evaluate_SemEVAL()

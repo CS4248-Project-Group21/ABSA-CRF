@@ -1,9 +1,16 @@
-from preprocessor2 import Preprocessor2
+import scipy.stats
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import RandomizedSearchCV
 
-import pycrfsuite
+import sklearn_crfsuite
+from sklearn_crfsuite import scorers
+from sklearn_crfsuite import metrics
+
+from baseline import CNFBaselineModel
+
 import numpy as np
-from collections import Counter
-
+from preprocessor2 import Preprocessor2
 
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
@@ -11,6 +18,7 @@ from nltk.corpus import stopwords
 from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
+import eli5
 
 
 RESTAURANT_TRAIN_DIRECTORY = "data/train_data/Restaurants_Train_v2.xml"
@@ -19,10 +27,14 @@ RESTAURANT_TEST_DIRECTORY = "data/test_data/Restaurants_Test_Truth.xml"
 LAPTOP_TRAIN_DIRECTORY = "data/train_data/Laptop_Train_v2.xml"
 LAPTOP_TEST_DIRECTORY = "data/test_data/Laptops_Test_Truth.xml"
 
-# nltk.download('wordnet')
-# nltk.download('omw-1.4')
-# nltk.download('vader_lexicon')
-class CNFModel:
+
+'''
+    Another CRF model which is similar to pycrf. Both sklearncrf and pycrfsuite are wrapper classes
+    of 
+'''
+
+
+class CNFModel2:
 
     '''
         Change desired directory here to test on restaurant/laptop
@@ -33,11 +45,10 @@ class CNFModel:
         self.test_data = self.preprocessed.test_data
         self.corpus_freq = self.build_corpus_freq()
 
+        self.predicted = []
+        self.truth = []
 
-    '''
-        Customise the type of model by commenting out features below
-        E.g if Using Word Shape + POS + Bigram Model, comment out all other features
-    '''
+
     # sentence = [(w1, pos, dep, NER, bio_label), (w2, pos, dep, NER, bio_label),...,(wn, pos, dep, NER, bio_label)]
     def extract_features(self, sentence):
 
@@ -64,16 +75,16 @@ class CNFModel:
                 'word.isupper': current_word.isupper(),
                 'postag': current_pos,
                 'postag[:2]': current_pos[:2],
-                'word.lemmatized': lemmatizer.lemmatize(current_word),
-                'word.stemmed': stemmer.stem(current_word),
-                'word.positivityscore': polarity_score['pos'],
-                'word.negativityscore': polarity_score['neg'],
-                'word.isStopWord': self.isStopword(current_word),
-                'word.isFrequent': self.isTokenFrequent(current_word),
-                'word.is_dobj': current_dep == 'dobj',
-                'word.is_iobj': current_dep == 'iobj',
-                'word.is_nsubj': current_dep == 'nsubj',
-                'word.NER': current_ner
+                #'word.lemmatized': lemmatizer.lemmatize(current_word),
+                #'word.stemmed': stemmer.stem(current_word),
+                #'word.positivityscore': polarity_score['pos'],
+                #'word.negativityscore': polarity_score['neg'],
+                #'word.isStopWord': self.isStopword(current_word),
+                #'word.isFrequent': self.isTokenFrequent(current_word),
+                #'word.is_dobj': current_dep == 'dobj',
+                #'word.is_iobj': current_dep == 'iobj',
+                #'word.is_nsubj': current_dep == 'nsubj',
+                #'word.NER': current_ner
             }
 
             # Features for words that are not at the beginning of a sentence
@@ -128,7 +139,6 @@ class CNFModel:
             return self.corpus_freq[token] > 4
         return False
 
-
     def get_label(self, sentence):
         return [label for (token, pos, dep, ner, label) in sentence]
 
@@ -137,7 +147,7 @@ class CNFModel:
             return True
         return False
 
-    def train_model(self):
+    def find_hyperparameters(self):
         print("Training Model...")
         X = [self.extract_features(sentence) for sentence in self.train_data]
         y = [self.get_label(sentence) for sentence in self.train_data]
@@ -145,83 +155,77 @@ class CNFModel:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=150, random_state=2)
 
         print('Generated Training Features + Labels...')
-        trainer = pycrfsuite.Trainer(verbose=False)
-        for xseq, yseq in zip(X_train, y_train):
-            trainer.append(xseq, yseq)
 
-        trainer.set_params({
-            # coefficient for L1 penalty
-            'c1': 0.03655,
+        crf = sklearn_crfsuite.CRF(
+            algorithm='lbfgs',
+            max_iterations=200,
+            all_possible_transitions=True,
+        )
 
-            # coefficient for L2 penalty
-            'c2': 0.09558,
+        params_space = {
+            'c1': scipy.stats.expon(scale=0.5),
+            'c2': scipy.stats.expon(scale=0.05),
+        }
 
-            # maximum number of iterations
-            'max_iterations': 200,
+        f1_scorer = make_scorer(get_f1_metrics, greater_is_better=True)
 
-            # whether to include transitions that
-            # are possible, but not observed
-            'feature.possible_transitions': True
-        })
-        trainer.train('crf.model')
+        rs = RandomizedSearchCV(crf, params_space,
+                                cv=5,
+                                verbose=1,
+                                n_jobs=-1,
+                                n_iter=100,
+                                scoring=f1_scorer,
+                                )
+
+        rs.fit(X_train, y_train)
+
         print("Finished training model...")
 
-        tagger = pycrfsuite.Tagger()
-        tagger.open('crf.model')
+        print('best params:', rs.best_params_)
+        print('best CV score:', rs.best_score_)
 
-        y_pred = [tagger.tag(xseq) for xseq in X_test]
-        labels = {"B": 0, 'I': 1, 'O': 2}  # row indexes for position of labels in the classification matrix
 
-        predictions = np.array([labels[tag] for row in y_pred for tag in row])
-        truths = np.array([labels[tag] for row in y_test for tag in row])
+    def evaluate_SemEVAL(self):
+        X = [self.extract_features(sentence) for sentence in self.train_data]
+        y = [self.get_label(sentence) for sentence in self.train_data]
 
-        print("------------------------------------------------ VALIDATION RESULTS ------------------------------------------------")
-        print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
-        new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
-        new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
+        X_train, X_test_val, y_train, y_test_val = train_test_split(X, y, test_size=150, random_state=2)
 
-        print(self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
+        print('Generated Training Features + Labels...')
 
-    def predict(self):
-        print("Predicting Model...")
+        crf = sklearn_crfsuite.CRF(
+            algorithm='lbfgs',
+            c1=0.03655,
+            c2=0.09558,
+            max_iterations=200,
+            all_possible_transitions=True,
+        )
+
+        crf.fit(X_train, y_train)
+
+        print('Fitted model...')
+
         X_test = [self.extract_features(sentence) for sentence in self.test_data]
         y_test = [self.get_label(sentence) for sentence in self.test_data]
 
-        tagger = pycrfsuite.Tagger()
-        tagger.open('crf.model')
+        print('Generated Test Features + Labels...')
 
-        y_pred = [tagger.tag(xseq) for xseq in X_test]
+        y_pred = crf.predict(X_test)
 
-        print('Generated Predicted Features + Labels...')
-        labels = {"B": 0, 'I': 1, 'O': 2}  # row indexes for position of labels in the classification matrix
-
-        predictions = np.array([labels[tag] for row in y_pred for tag in row])
-        truths = np.array([labels[tag] for row in y_test for tag in row])
-
-        print("------------------------------------------------ SEMEVAL RESULTS ------------------------------------------------")
-        print(classification_report(truths, predictions, target_names=['B', 'I', 'O']))
+        self.predicted = y_pred
+        self.truth = y_test
 
         new_y_test = list(map(lambda x: list(map(self.change_BIO, x)), y_test))
         new_y_pred = list(map(lambda x: list(map(self.change_BIO, x)), y_pred))
 
-        print(self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
+        print("F1 score = %s" % self.get_metrics(new_y_test, new_y_pred, b=1))  ## printing new metric to calculate F1
 
-    def check_learnt(self):
-        tagger = pycrfsuite.Tagger()
-        tagger.open('crf.model')
 
-        info = tagger.info()
 
-        print("\nTop Positive Features")
-        counter = 1
-        for (attr, label), weight in Counter(info.state_features).most_common(100):
-            if counter < 10:
-                print("  Rank %s ---> %0.6f %-6s %s" % (counter, weight, label, attr))
-            elif counter >= 10 and counter <= 99:
-                print(" Rank %s ---> %0.6f %-6s %s" % (counter, weight, label, attr))
-            else:
-                print("Rank %s ---> %0.6f %-6s %s" % (counter, weight, label, attr))
-            counter += 1
+        #expl = eli5.explain_weights(crf, top=(3,3), feature_re='^word\.NER') # analyze NER
+        #expl = eli5.explain_weights(crf, top=(3,3), feature_re='^postag') # analyze POS tags
+        #expl = eli5.explain_weights(crf, top=(3,3), feature_re='^word\.is\_') # analyze DEP
+        #print(eli5.format_as_text(expl))
 
 
     '''
@@ -268,14 +272,70 @@ class CNFModel:
         r = common / relevant
         f1 = (1 + (b ** 2)) * p * r / ((p * b ** 2) + r) if p > 0 and r > 0 else 0.
 
-        text = "Precision = {pre}, Recall = {rec}, F1 = {f1_score}," \
-               " Common = {com}, Retrieved = {ret}, Relevant = {rel}".format(pre=p, rec=r, f1_score=f1, com=common,
-                                                                             ret=retrieved, rel=relevant)
-        return text
+        return f1
 
+
+def change_BIO_f1(label):
+    if label == 'O':
+        return 0
+    elif label == 'B':
+        return 1
+    else:
+        return 2
+
+
+def get_term_pos_f1(labels):
+    start, end = 0, 0
+    tag_on = False
+    terms = []
+    labels = np.append(labels, [0])
+    for i, label in enumerate(labels):
+        if label == 1 and not tag_on:
+            tag_on = True
+            start = i
+        if tag_on and labels[i + 1] != 2:
+            tag_on = False
+            end = i
+            terms.append((start, end))
+    return terms
+
+def get_f1_metrics(test_y, pred_y):
+
+    b = 1
+
+    common, relevant, retrieved = 0., 0., 0.
+
+    new_y_test = list(map(lambda x: list(map(change_BIO_f1, x)), test_y))
+    new_y_pred = list(map(lambda x: list(map(change_BIO_f1, x)), pred_y))
+
+    for i in range(len(test_y)):
+        cor = get_term_pos_f1(new_y_test[i])
+        pre = get_term_pos_f1(new_y_pred[i])
+        common += len([a for a in pre if a in cor])
+        retrieved += len(pre)
+        relevant += len(cor)
+    p = common / retrieved if retrieved > 0 else 0.
+    r = common / relevant
+    f1 = (1 + (b ** 2)) * p * r / ((p * b ** 2) + r) if p > 0 and r > 0 else 0.
+    return f1
+
+
+
+def find_improved_sentences(without_bg, bg):
+    classified_correctly = []
+    for sentence in without_bg:
+        if sentence not in bg:
+            classified_correctly.append(sentence)
+    print(classified_correctly)
 
 if __name__ == "__main__":
-    model = CNFModel()
-    model.train_model()
-    model.predict()
-    #model.check_learnt()
+    model = CNFModel2()
+    model.evaluate_SemEVAL()
+    with_bg = model.find_different_predictions()
+
+    # baseline = CNFBaselineModel()
+    # baseline.evaluate_SemEVAL()
+    # without_bg = baseline.find_different_predictions()
+    #
+    # find_improved_sentences(without_bg, with_bg)
+
