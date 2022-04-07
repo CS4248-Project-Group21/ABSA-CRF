@@ -30,7 +30,14 @@ LAPTOP_TEST_DIRECTORY = "data/test_data/Laptops_Test_Truth.xml"
 
 '''
     Another CRF model which is similar to pycrf. Both sklearncrf and pycrfsuite are wrapper classes
-    of 
+    of the orginal CRFsuite written in C++. It uses the exact same algorithm but has completely different API.
+    
+    This file was used to identify features due to its sklearn's ability to support feature identification.
+    Our main model was first built under pycrfsuite which proved to work. We shifted to sklearn midway to conduct 
+    hyperparameter optimisation as pycrfsuite had no API or tutorial on how to do it (not that im aware of.)
+    
+    We compared results generated from sklearncrf and pycrfsuite using the exact same algorithm, features, hyperparameters
+    and datasets. Results for both cases were similar in all test cases.
 '''
 
 
