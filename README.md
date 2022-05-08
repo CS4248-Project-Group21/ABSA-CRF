@@ -1,5 +1,6 @@
-# ABSA-CNF
+# ABSA-CRF
 
+A Conditional Random Fields model built using pycrfsuite for datasets on SemEval2014 for Aspect Term Extraction.
 
 Our main model is under model.py. Baseline model is under baseline.py
 
